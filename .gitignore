@@ -62,3 +62,7 @@ Desktop.ini
 # Bỏ qua các thư mục tài liệu cá nhân
 md-contexts/
 notes/
+
+# Bỏ qua file chạy ngrok
+ngrok.exe
+ngrok
