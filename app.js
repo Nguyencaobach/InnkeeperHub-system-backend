@@ -6,6 +6,7 @@ import path from 'path';
 import authRouter from './src/modules/business-services/auth/auth.route.js'; // Router quản lý xác thực (đăng nhập, đăng xuất)
 import roomTypeRouter from './src/modules/business-services/rooms-management/room-types/room_type.route.js'; // Router quản lý loại phòng
 import roomDetailRouter from './src/modules/business-services/rooms-management/room-details/room_detail.route.js'; // Router quản lý chi tiết phòng
+import staffRoutes from './src/modules/business-services/staff-management/staff.route.js'; // Router quản lý nhân viên
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.static(path.join(process.cwd(), 'public'))); // Cho phép truy c
 app.use('/api/auth', authRouter); // Router quản lý xác thực vào đường dẫn /api/auth (VD: /api/auth/login, /api/auth/logout)
 app.use('/api/room-types', roomTypeRouter); // Router quản lý loại phòng vào đường dẫn /api/room-types
 app.use('/api/room-details', roomDetailRouter); // Router quản lý chi tiết phòng vào đường dẫn /api/room-details    
+app.use('/api/staff', staffRoutes); // Router quản lý nhân viên vào đường dẫn /api/staff
 
 // 🔥 QUAN TRỌNG: Chỉ xuất app ra chứ KHÔNG gọi app.listen() ở đây
 export default app;
