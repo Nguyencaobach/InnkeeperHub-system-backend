@@ -8,6 +8,7 @@ import roomTypeRouter from './src/modules/business-services/rooms-management/roo
 import roomDetailRouter from './src/modules/business-services/rooms-management/room-details/room_detail.route.js'; // Router quản lý chi tiết phòng
 import staffRoutes from './src/modules/business-services/staff-management/staff.route.js'; // Router quản lý nhân viên
 import customerRoutes from './src/modules/business-services/customer-management/customer.route.js'; // Router quản lý khách hàng
+import categoryRoutes from './src/modules/business-services/warehouse-management/product-categories/category.route.js'; // Router quản lý danh mục sản phẩm kho
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/room-types', roomTypeRouter); // Router quản lý loại phòng v
 app.use('/api/room-details', roomDetailRouter); // Router quản lý chi tiết phòng vào đường dẫn /api/room-details    
 app.use('/api/staff', staffRoutes); // Router quản lý nhân viên vào đường dẫn /api/staff
 app.use('/api/customers', customerRoutes); // Router quản lý khách hàng vào đường dẫn /api/customers
+app.use('/api/product-categories', categoryRoutes); // Router quản lý danh mục sản phẩm kho vào đường dẫn /api/product-categories
 
 
 export default app;
