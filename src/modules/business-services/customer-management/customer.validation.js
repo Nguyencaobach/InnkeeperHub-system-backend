@@ -1,8 +1,8 @@
 import Joi from 'joi';
 
-// ================= SCHEMA CHO THÊM MỚI NHÂN VIÊN =================
-export const createStaffSchema = Joi.object({
-    // Các trường bắt buộc
+// ================= SCHEMA CHO THÊM MỚI KHÁCH HÀNG =================
+export const createCustomerSchema = Joi.object({
+    // 1. CÁC TRƯỜNG BẮT BUỘC
     email: Joi.string().email().required().messages({
         'string.empty': 'Email không được để trống.',
         'string.email': 'Email không đúng định dạng.',
@@ -18,31 +18,30 @@ export const createStaffSchema = Joi.object({
         'any.required': 'Vui lòng nhập mật khẩu.'
     }),
     
-    // Các trường tùy chọn (Backend sẽ tự xử lý mặc định nếu không gửi)
-    username: Joi.string().trim().optional().empty('').allow(null).default(null), // Sẽ tự sinh từ email nếu để trống
-    role: Joi.string().valid('ADMIN', 'MANAGER', 'STAFF').optional().empty('').default('STAFF'),
+    // Thêm trường is_active để khi form thêm mới gửi is_active: true lên không bị Joi chặn lại
+    is_active: Joi.boolean().default(true),
     
-    gender: Joi.string().valid('NAM', 'NU', 'KHAC').optional().empty('').allow(null).default(null),
+    // 2. CÁC TRƯỜNG TÙY CHỌN (optional + empty('') + allow(null) để bỏ qua khi để trống)
+    username: Joi.string().trim().optional().empty('').allow(null).default(null), 
+    
     date_of_birth: Joi.date().optional().empty('').allow(null).default(null),
+    address: Joi.string().optional().empty('').allow(null).default(null),
+    
     phone_number: Joi.string().pattern(/^[0-9]{10,11}$/).optional().empty('').allow(null).default(null).messages({
         'string.pattern.base': 'Số điện thoại không hợp lệ (10-11 số).'
     }),
-    permanent_address: Joi.string().optional().empty('').allow(null).default(null),
+    
+    avatar_url: Joi.string().optional().empty('').allow(null).default(null),
     
     cccd_number: Joi.string().pattern(/^[0-9]{12}$/).optional().empty('').allow(null).default(null).messages({
         'string.pattern.base': 'Căn cước công dân phải đủ 12 số.'
     }),
     cccd_issue_date: Joi.date().optional().empty('').allow(null).default(null),
-    cccd_issue_place: Joi.string().optional().empty('').allow(null).default(null),
-
-    // Thông tin ngân hàng (Tùy chọn, cập nhật sau cũng được)
-    bank_name: Joi.string().optional().empty('').allow(null).default(null),
-    bank_account_number: Joi.string().optional().empty('').allow(null).default(null),
-    bank_account_name: Joi.string().optional().empty('').allow(null).default(null)
+    cccd_issue_place: Joi.string().optional().empty('').allow(null).default(null)
 });
 
-// ================= SCHEMA CHO CẬP NHẬT NHÂN VIÊN =================
-export const updateStaffSchema = Joi.object({
+// ================= SCHEMA CHO CẬP NHẬT KHÁCH HÀNG =================
+export const updateCustomerSchema = Joi.object({
     email: Joi.string().email().required().messages({
         'string.empty': 'Email không được để trống.',
         'string.email': 'Email không đúng định dạng.'
@@ -51,30 +50,26 @@ export const updateStaffSchema = Joi.object({
         'string.empty': 'Họ và tên không được để trống.'
     }),
     
-    // Khi update, password được phép để trống (không đổi pass)
     password: Joi.string().min(6).optional().empty('').allow(null, '').messages({
         'string.min': 'Mật khẩu phải có ít nhất 6 ký tự.'
     }),
     
-    role: Joi.string().valid('ADMIN', 'MANAGER', 'STAFF').optional().empty('').allow(null),
-    is_active: Joi.boolean().optional().empty('').allow(null), // Cho phép gửi lệnh khóa/mở khóa tài khoản
+    is_active: Joi.boolean().optional().empty('').allow(null), 
     
     username: Joi.string().trim().optional().empty('').allow(null),
 
-    gender: Joi.string().valid('NAM', 'NU', 'KHAC').optional().empty('').allow(null).default(null),
     date_of_birth: Joi.date().optional().empty('').allow(null).default(null),
+    address: Joi.string().optional().empty('').allow(null).default(null),
+    
     phone_number: Joi.string().pattern(/^[0-9]{10,11}$/).optional().empty('').allow(null).default(null).messages({
-        'string.pattern.base': 'Số điện thoại không hợp lệ.'
+        'string.pattern.base': 'Số điện thoại không hợp lệ (10-11 số).'
     }),
-    permanent_address: Joi.string().optional().empty('').allow(null).default(null),
+    
+    avatar_url: Joi.string().optional().empty('').allow(null).default(null),
     
     cccd_number: Joi.string().pattern(/^[0-9]{12}$/).optional().empty('').allow(null).default(null).messages({
         'string.pattern.base': 'Căn cước công dân phải đủ 12 số.'
     }),
     cccd_issue_date: Joi.date().optional().empty('').allow(null).default(null),
-    cccd_issue_place: Joi.string().optional().empty('').allow(null).default(null),
-
-    bank_name: Joi.string().optional().empty('').allow(null).default(null),
-    bank_account_number: Joi.string().optional().empty('').allow(null).default(null),
-    bank_account_name: Joi.string().optional().empty('').allow(null).default(null)
+    cccd_issue_place: Joi.string().optional().empty('').allow(null).default(null)
 });

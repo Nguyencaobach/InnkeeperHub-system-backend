@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors'; // 1. Bắt buộc phải import cors
+import cors from 'cors'; 
 import path from 'path';
 
 // Kéo Router của chức năng Đăng nhập vào
@@ -7,6 +7,7 @@ import authRouter from './src/modules/business-services/auth/auth.route.js'; // 
 import roomTypeRouter from './src/modules/business-services/rooms-management/room-types/room_type.route.js'; // Router quản lý loại phòng
 import roomDetailRouter from './src/modules/business-services/rooms-management/room-details/room_detail.route.js'; // Router quản lý chi tiết phòng
 import staffRoutes from './src/modules/business-services/staff-management/staff.route.js'; // Router quản lý nhân viên
+import customerRoutes from './src/modules/business-services/customer-management/customer.route.js'; // Router quản lý khách hàng
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.use('/api/auth', authRouter); // Router quản lý xác thực vào đườn
 app.use('/api/room-types', roomTypeRouter); // Router quản lý loại phòng vào đường dẫn /api/room-types
 app.use('/api/room-details', roomDetailRouter); // Router quản lý chi tiết phòng vào đường dẫn /api/room-details    
 app.use('/api/staff', staffRoutes); // Router quản lý nhân viên vào đường dẫn /api/staff
+app.use('/api/customers', customerRoutes); // Router quản lý khách hàng vào đường dẫn /api/customers
 
-// 🔥 QUAN TRỌNG: Chỉ xuất app ra chứ KHÔNG gọi app.listen() ở đây
+
 export default app;
+
+
