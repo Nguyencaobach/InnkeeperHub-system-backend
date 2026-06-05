@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors'; 
 import path from 'path';
+import morgan from 'morgan'; // Middleware ghi log các request vào console
+import 'dotenv/config';
 
 // Kéo Router của chức năng Đăng nhập vào
 import authRouter from './src/modules/business-services/auth/auth.route.js'; // Router quản lý xác thực (đăng nhập, đăng xuất)
@@ -9,8 +11,10 @@ import roomDetailRouter from './src/modules/business-services/rooms-management/r
 import staffRoutes from './src/modules/business-services/staff-management/staff.route.js'; // Router quản lý nhân viên
 import customerRoutes from './src/modules/business-services/customer-management/customer.route.js'; // Router quản lý khách hàng
 import categoryRoutes from './src/modules/business-services/warehouse-management/product-categories/category.route.js'; // Router quản lý danh mục sản phẩm kho
+import productRoutes from './src/modules/business-services/warehouse-management/products/product.route.js'; // Router quản lý sản phẩm kho
 
 const app = express();
+app.use(morgan('dev'));
 
 // ==========================================
 // CÁC MIDDLEWARE QUAN TRỌNG
@@ -29,6 +33,7 @@ app.use('/api/room-details', roomDetailRouter); // Router quản lý chi tiết 
 app.use('/api/staff', staffRoutes); // Router quản lý nhân viên vào đường dẫn /api/staff
 app.use('/api/customers', customerRoutes); // Router quản lý khách hàng vào đường dẫn /api/customers
 app.use('/api/product-categories', categoryRoutes); // Router quản lý danh mục sản phẩm kho vào đường dẫn /api/product-categories
+app.use('/api/products', productRoutes); // Router quản lý sản phẩm kho vào đường dẫn /api/products
 
 
 export default app;
