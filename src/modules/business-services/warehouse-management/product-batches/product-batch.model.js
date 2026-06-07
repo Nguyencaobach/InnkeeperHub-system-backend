@@ -79,3 +79,21 @@ export const deleteBatchById = async (id) => {
     const result = await db.query(query, [id]);
     return result.rows[0];
 };
+
+// =========================================================
+// HÀM CRON JOB: TỰ ĐỘNG KHÓA LÔ HÀNG HẾT HẠN SỬ DỤNG
+// =========================================================
+export const autoLockExpiredBatches = async () => {
+    // Ép Azure lấy ngày hiện tại theo giờ Việt Nam (UTC+7) để so sánh
+    // Tránh lỗi: lô hàng hết hạn ngày 7/6 nhưng mãi 7h sáng ngày 8/6 mới bị khóa
+    const query = `
+        UPDATE product_batches
+        SET status = 'LOCKED', updated_at = CURRENT_TIMESTAMP
+        WHERE exp_date < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::DATE AND status = 'ACTIVE'
+        RETURNING batch_id;
+    `;
+    const result = await db.query(query);
+    
+    // Trả về số lượng lô hàng vừa bị khóa để in ra log
+    return result.rowCount;
+};

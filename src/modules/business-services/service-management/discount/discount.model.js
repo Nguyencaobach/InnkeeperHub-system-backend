@@ -69,3 +69,21 @@ export const deleteDiscountById = async (id) => {
     const result = await db.query(query, [id]);
     return result.rows[0];
 };
+
+// =========================================================
+// HÀM CRON JOB: TỰ ĐỘNG KHÓA MÃ GIẢM GIÁ HẾT HẠN
+// =========================================================
+export const autoLockExpiredDiscounts = async () => {
+    // So sánh theo ngày (giống lô hàng): khóa khi ngày VN hiện tại > end_date
+    // Mã giảm giá vẫn hoạt động xuyên suốt ngày end_date, bị khóa vào 00:00 ngày hôm sau
+    const query = `
+        UPDATE discount_codes 
+        SET is_active = false, updated_at = CURRENT_TIMESTAMP
+        WHERE end_date::DATE < (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::DATE AND is_active = true
+        RETURNING discount_id;
+    `;
+    const result = await db.query(query);
+    
+    // Trả về số lượng mã vừa bị khóa để in ra log
+    return result.rowCount; 
+};

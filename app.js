@@ -15,6 +15,8 @@ import productRoutes from './src/modules/business-services/warehouse-management/
 import productBatchRoutes from './src/modules/business-services/warehouse-management/product-batches/product-batch.route.js'; // Router quản lý lô nhập kho hàng
 import discountRoutes from './src/modules/business-services/service-management/discount/discount.route.js'; // Roter quản lý mã giảm giá
 
+import { initCronJobs } from './src/shared/services/cron.service.js';
+
 const app = express();
 app.use(morgan('dev'));
 
@@ -39,6 +41,7 @@ app.use('/api/products', productRoutes); // Router quản lý sản phẩm kho v
 app.use('/api/product-batches', productBatchRoutes); // Router quản lý lô hàng nhập vào đường dẫn /api/product-batches
 app.use('/api/discounts', discountRoutes); // Router quản lý mã giảm giá, đường dẫn /api/discounts
 
+initCronJobs();
 
 export default app;
 
