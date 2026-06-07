@@ -12,6 +12,8 @@ import staffRoutes from './src/modules/business-services/staff-management/staff.
 import customerRoutes from './src/modules/business-services/customer-management/customer.route.js'; // Router quản lý khách hàng
 import categoryRoutes from './src/modules/business-services/warehouse-management/product-categories/category.route.js'; // Router quản lý danh mục sản phẩm kho
 import productRoutes from './src/modules/business-services/warehouse-management/products/product.route.js'; // Router quản lý sản phẩm kho
+import productBatchRoutes from './src/modules/business-services/warehouse-management/product-batches/product-batch.route.js'; // Router quản lý lô nhập kho hàng
+import discountRoutes from './src/modules/business-services/service-management/discount/discount.route.js'; // Roter quản lý mã giảm giá
 
 const app = express();
 app.use(morgan('dev'));
@@ -34,6 +36,8 @@ app.use('/api/staff', staffRoutes); // Router quản lý nhân viên vào đư�
 app.use('/api/customers', customerRoutes); // Router quản lý khách hàng vào đường dẫn /api/customers
 app.use('/api/product-categories', categoryRoutes); // Router quản lý danh mục sản phẩm kho vào đường dẫn /api/product-categories
 app.use('/api/products', productRoutes); // Router quản lý sản phẩm kho vào đường dẫn /api/products
+app.use('/api/product-batches', productBatchRoutes); // Router quản lý lô hàng nhập vào đường dẫn /api/product-batches
+app.use('/api/discounts', discountRoutes); // Router quản lý mã giảm giá, đường dẫn /api/discounts
 
 
 export default app;

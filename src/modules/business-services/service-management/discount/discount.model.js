@@ -1,0 +1,71 @@
+import db from '../../../../shared/database/db.js';
+
+// 1. Kiểm tra trùng mã code (Dùng lúc tạo mới hoặc cập nhật)
+export const checkCodeExists = async (code, excludeId = null) => {
+    let query = `SELECT discount_id FROM discount_codes WHERE code = $1`;
+    let params = [code];
+    
+    // Nếu đang cập nhật thì loại trừ chính bản thân nó ra
+    if (excludeId) {
+        query += ` AND discount_id != $2`;
+        params.push(excludeId);
+    }
+    const result = await db.query(query, params);
+    return result.rows.length > 0;
+};
+
+// 2. Thêm mới mã giảm giá
+export const insertDiscount = async (data) => {
+    const query = `
+        INSERT INTO discount_codes 
+        (code, description, discount_amount, min_order_value, usage_limit, start_date, end_date, is_active) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        RETURNING *;
+    `;
+    const values = [
+        data.code, data.description, data.discount_amount, data.min_order_value, 
+        data.usage_limit, data.start_date, data.end_date, data.is_active
+    ];
+    const result = await db.query(query, values);
+    return result.rows[0];
+};
+
+// 3. Lấy danh sách tất cả mã giảm giá
+export const fetchAllDiscounts = async () => {
+    // Sắp xếp ưu tiên ngày kết thúc xa nhất hoặc mới tạo lên đầu
+    const query = `SELECT * FROM discount_codes ORDER BY created_at DESC`;
+    const result = await db.query(query);
+    return result.rows;
+};
+
+// 4. Lấy chi tiết 1 mã giảm giá
+export const fetchDiscountById = async (id) => {
+    const query = `SELECT * FROM discount_codes WHERE discount_id = $1`;
+    const result = await db.query(query, [id]);
+    return result.rows[0] || null;
+};
+
+// 5. Cập nhật mã giảm giá
+export const updateDiscountById = async (id, data) => {
+    const query = `
+        UPDATE discount_codes 
+        SET code = $1, description = $2, discount_amount = $3, min_order_value = $4, 
+            usage_limit = $5, start_date = $6, end_date = $7, is_active = $8, 
+            updated_at = CURRENT_TIMESTAMP
+        WHERE discount_id = $9 
+        RETURNING *;
+    `;
+    const values = [
+        data.code, data.description, data.discount_amount, data.min_order_value, 
+        data.usage_limit, data.start_date, data.end_date, data.is_active, id
+    ];
+    const result = await db.query(query, values);
+    return result.rows[0];
+};
+
+// 6. Xóa mã giảm giá
+export const deleteDiscountById = async (id) => {
+    const query = `DELETE FROM discount_codes WHERE discount_id = $1 RETURNING *`;
+    const result = await db.query(query, [id]);
+    return result.rows[0];
+};
