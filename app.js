@@ -14,6 +14,8 @@ import categoryRoutes from './src/modules/business-services/warehouse-management
 import productRoutes from './src/modules/business-services/warehouse-management/products/product.route.js'; // Router quản lý sản phẩm kho
 import productBatchRoutes from './src/modules/business-services/warehouse-management/product-batches/product-batch.route.js'; // Router quản lý lô nhập kho hàng
 import discountRoutes from './src/modules/business-services/service-management/discount/discount.route.js'; // Roter quản lý mã giảm giá
+import additionalServiceRoutes from './src/modules/business-services/service-management/additional-services/service.route.js'; // Router dịch vụ đi kèm
+
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
 
@@ -40,9 +42,11 @@ app.use('/api/product-categories', categoryRoutes); // Router quản lý danh m�
 app.use('/api/products', productRoutes); // Router quản lý sản phẩm kho vào đường dẫn /api/products
 app.use('/api/product-batches', productBatchRoutes); // Router quản lý lô hàng nhập vào đường dẫn /api/product-batches
 app.use('/api/discounts', discountRoutes); // Router quản lý mã giảm giá, đường dẫn /api/discounts
+app.use('/api/services', additionalServiceRoutes); // Router quản lý dịch vụ đi kèm đường dẫn /api/services
 
 initCronJobs();
 
 export default app;
+
 
 
