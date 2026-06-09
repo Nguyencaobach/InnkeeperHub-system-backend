@@ -17,8 +17,14 @@ export const loginLogic = async (username, password) => {
         throw new Error("Mật khẩu không chính xác.");
     }
 
-    // 3. Nếu đúng hết, tạo vé Token (Sử dụng user_id kiểu UUID của bạn)
-    const token = generateToken({ id: user.user_id, role: user.role });
+    // 3. Nếu đúng hết, tạo vé Token — thêm username, full_name, role để các controller dùng được
+    const token = generateToken({
+        id:        user.user_id,
+        user_id:   user.user_id,
+        role:      user.role,
+        username:  user.username,
+        full_name: user.full_name,
+    });
 
     // 4. Trả kết quả (Xóa bỏ password trước khi gửi ra ngoài Frontend)
     const { password: userPass, ...userInfo } = user;

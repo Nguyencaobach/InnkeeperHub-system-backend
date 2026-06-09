@@ -15,6 +15,8 @@ import productRoutes from './src/modules/business-services/warehouse-management/
 import productBatchRoutes from './src/modules/business-services/warehouse-management/product-batches/product-batch.route.js'; // Router quản lý lô nhập kho hàng
 import discountRoutes from './src/modules/business-services/service-management/discount/discount.route.js'; // Roter quản lý mã giảm giá
 import additionalServiceRoutes from './src/modules/business-services/service-management/additional-services/service.route.js'; // Router dịch vụ đi kèm
+import activityLogRoutes from './src/modules/business-services/account-activity/account_activity.route.js'; // Router ghi log hoạt động
+import warehouseStatusRoutes from './src/modules/business-services/dashboard/warehouse-status/warehouse_status.route.js'; // Router dashboard tình trạng kho hàng
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -43,6 +45,8 @@ app.use('/api/products', productRoutes); // Router quản lý sản phẩm kho v
 app.use('/api/product-batches', productBatchRoutes); // Router quản lý lô hàng nhập vào đường dẫn /api/product-batches
 app.use('/api/discounts', discountRoutes); // Router quản lý mã giảm giá, đường dẫn /api/discounts
 app.use('/api/services', additionalServiceRoutes); // Router quản lý dịch vụ đi kèm đường dẫn /api/services
+app.use('/api/account-activity', activityLogRoutes); // Router quản lý hoạt động tài khoản đường dẫn /api/account-activity
+app.use('/api/warehouse-status', warehouseStatusRoutes); // Router quản lý dashboard tình trạng kho hàng
 
 initCronJobs();
 

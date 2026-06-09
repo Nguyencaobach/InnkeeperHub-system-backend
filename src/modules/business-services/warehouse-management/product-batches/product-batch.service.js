@@ -30,11 +30,11 @@ const computeBatchAutoStatus = (exp_date, userStatus) => {
         exp = new Date(y, m - 1, d);
     }
 
-    // Hết hạn sử dụng → KHÓA ngay, không cần chờ cron
+    // Hết hạn sử dụng → bắt buộc LOCKED, không cần chờ cron
     if (exp < today) return 'LOCKED';
 
-    // Còn hạn → ACTIVE (dù user có đang để LOCKED do ngày cũ)
-    return 'ACTIVE';
+    // Còn hạn → tôn trọng lựa chọn của người dùng (có thể khóa thủ công)
+    return userStatus || 'ACTIVE';
 };
 
 // =========================================================
