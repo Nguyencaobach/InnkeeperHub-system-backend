@@ -42,6 +42,22 @@ const additionalServiceStorage = multer.diskStorage({
 });
 
 // ==========================================
+// 4. CẤU HÌNH LƯU ẢNH CCCD (MỚI)
+// ==========================================
+const cccdStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // Trỏ luồng lưu file vào thư mục cccd vừa tạo
+        cb(null, 'public/uploads/cccd/');
+    },
+    filename: function (req, file, cb) {
+        // Đặt tên file ngẫu nhiên tránh trùng lặp
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        // req.fieldname sẽ là 'cccd_front' hoặc 'cccd_back' (do form gửi lên), mình ghép luôn vào tên file cho dễ phân biệt
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// ==========================================
 // BỘ LỌC CHUNG: Chỉ cho phép file ảnh
 // ==========================================
 const fileFilter = (req, file, cb) => {
@@ -73,6 +89,13 @@ export const uploadProductImage = multer({
 // Xuất cho chức năng Dịch vụ đi kèm (MỚI)
 export const uploadAdditionalServiceImage = multer({ 
     storage: additionalServiceStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn ảnh 5MB
+});
+
+// XUẤT THÊM MIDDLEWARE CHO CCCD
+export const uploadCCCDImage = multer({ 
+    storage: cccdStorage,
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn ảnh 5MB
 });

@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors'; 
+import cors from 'cors';
 import path from 'path';
 import morgan from 'morgan'; // Middleware ghi log các request vào console
 import 'dotenv/config';
@@ -17,6 +17,7 @@ import discountRoutes from './src/modules/business-services/service-management/d
 import additionalServiceRoutes from './src/modules/business-services/service-management/additional-services/service.route.js'; // Router dịch vụ đi kèm
 import activityLogRoutes from './src/modules/business-services/account-activity/account_activity.route.js'; // Router ghi log hoạt động
 import warehouseStatusRoutes from './src/modules/business-services/dashboard/warehouse-status/warehouse_status.route.js'; // Router dashboard tình trạng kho hàng
+import bookingRoutes from './src/modules/business-services/rooms-management/booking-management/booking.route.js'; // Router quản lý phiên thuê phòng
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -28,7 +29,7 @@ app.use(morgan('dev'));
 // CÁC MIDDLEWARE QUAN TRỌNG
 // ==========================================
 app.use(cors()); // 2. Bật CORS lên trước tiên để cho phép Web/App gọi qua
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), 'public'))); // Cho phép truy cập vào thư mục public để lấy ảnh đã upload
 
@@ -47,6 +48,7 @@ app.use('/api/discounts', discountRoutes); // Router quản lý mã giảm giá,
 app.use('/api/services', additionalServiceRoutes); // Router quản lý dịch vụ đi kèm đường dẫn /api/services
 app.use('/api/account-activity', activityLogRoutes); // Router quản lý hoạt động tài khoản đường dẫn /api/account-activity
 app.use('/api/warehouse-status', warehouseStatusRoutes); // Router quản lý dashboard tình trạng kho hàng
+app.use('/api/bookings', bookingRoutes); // Router quản lý phiên thuê (Booking)
 
 initCronJobs();
 

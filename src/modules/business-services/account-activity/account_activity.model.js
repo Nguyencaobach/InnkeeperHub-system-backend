@@ -32,11 +32,12 @@ export const fetchAllLogs = async (limit = 100, offset = 0) => {
     return result.rows;
 };
 
-// 3. Xóa log theo ngày (chỉ ADMIN) — xóa toàn bộ log trước ngày chỉ định
+// 3. Xóa log theo ngày (chỉ ADMIN) — xóa toàn bộ log từ ngày chỉ định trở về trước (bao gồm cả ngày đó)
+// VD: chọn 08/06 → xóa toàn bộ log có created_at trong ngày 08/06 và cũ hơn
 export const deleteLogsBefore = async (beforeDate) => {
     const query = `
         DELETE FROM activity_logs
-        WHERE created_at < $1::date
+        WHERE created_at < ($1::date + INTERVAL '1 day')
         RETURNING log_id;
     `;
     const result = await db.query(query, [beforeDate]);
