@@ -1,9 +1,9 @@
 import express from 'express';
-import { createBooking } from './booking.controller.js';
+import { createBooking, getActiveBookingByRoom, updateBooking, checkoutBooking } from './booking.controller.js';
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { uploadCCCDImage } from '../../../../shared/middlewares/upload.middleware.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
-import { bookingSchema } from './booking.validation.js';
+import { bookingSchema, updateBookingSchema } from './booking.validation.js';
 
 const router = express.Router();
 
@@ -21,5 +21,14 @@ router.post('/',
     // 3. Xử lý logic
     createBooking
 );
+
+// [GET] Lấy phiên thuê đang active theo room_detail_id
+router.get('/by-room/:roomDetailId', getActiveBookingByRoom);
+
+// [PUT] Cập nhật thông tin phiên thuê
+router.put('/:id', validateData(updateBookingSchema), updateBooking);
+
+// [PATCH] Thanh toán & Trả phòng
+router.patch('/:id/checkout', checkoutBooking);
 
 export default router;

@@ -63,6 +63,8 @@ Desktop.ini
 md-contexts/
 notes/
 
+public/
+
 # Bỏ qua file chạy ngrok
 ngrok.exe
 ngrok

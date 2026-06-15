@@ -52,3 +52,87 @@ export const createBookingTransaction = async (bookingData) => {
         client.release(); // Trả kết nối lại cho pool
     }
 };
+
+// ── Lấy phiên thuê đang active theo room_detail_id ──────────────────────────
+export const getActiveBookingByRoomId = async (roomDetailId) => {
+    const query = `
+        SELECT * FROM bookings
+        WHERE room_detail_id = $1
+          AND is_currently_rented = true
+          AND booking_status = 'RENTED'
+        ORDER BY created_at DESC
+        LIMIT 1;
+    `;
+    const result = await pool.query(query, [roomDetailId]);
+    return result.rows[0] || null;
+};
+
+// ── Cập nhật thông tin phiên thuê ────────────────────────────────────────────
+export const updateBookingById = async (id, data) => {
+    const {
+        guest_name, guest_phone, guest_email,
+        rent_type, expected_checkin, expected_checkout
+    } = data;
+
+    const query = `
+        UPDATE bookings
+        SET
+            guest_name        = $1,
+            guest_phone       = $2,
+            guest_email       = $3,
+            rent_type         = $4,
+            expected_checkin  = $5,
+            expected_checkout = $6,
+            updated_at        = NOW()
+        WHERE booking_id = $7
+        RETURNING *;
+    `;
+    const values = [
+        guest_name, guest_phone, guest_email ?? null,
+        rent_type, expected_checkin, expected_checkout ?? null,
+        id
+    ];
+    const result = await pool.query(query, values);
+    if (result.rowCount === 0) throw new Error('Không tìm thấy phiên thuê.');
+    return result.rows[0];
+};
+
+// ── Thanh toán & Trả phòng ────────────────────────────────────────────────────
+export const checkoutBookingById = async (id) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Cập nhật phiên thuê → PAID, kết thúc
+        const updateBookingQuery = `
+            UPDATE bookings
+            SET
+                booking_status      = 'COMPLETED',
+                is_currently_rented = false,
+                actual_checkout     = NOW(),
+                payment_status      = 'PAID',
+                updated_at          = NOW()
+            WHERE booking_id = $1
+            RETURNING room_detail_id, booking_code;
+        `;
+        const resBooking = await client.query(updateBookingQuery, [id]);
+        if (resBooking.rowCount === 0) throw new Error('Không tìm thấy phiên thuê.');
+        const { room_detail_id, booking_code } = resBooking.rows[0];
+
+        // 2. Cập nhật trạng thái phòng → AVAILABLE
+        const updateRoomQuery = `
+            UPDATE room_details
+            SET status = 'AVAILABLE'
+            WHERE id = $1;
+        `;
+        await client.query(updateRoomQuery, [room_detail_id]);
+
+        await client.query('COMMIT');
+        return { booking_code };
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};

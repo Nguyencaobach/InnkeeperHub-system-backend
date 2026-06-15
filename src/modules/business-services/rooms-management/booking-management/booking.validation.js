@@ -1,5 +1,6 @@
 import Joi from 'joi';
 
+// Schema tạo phiên thuê mới
 export const bookingSchema = Joi.object({
     room_type_id: Joi.string().guid({ version: ['uuidv4', 'uuidv5'] }).required().messages({
         'any.required': 'Lỗi: Thiếu ID Loại phòng.'
@@ -31,4 +32,24 @@ export const bookingSchema = Joi.object({
     // Tài chính (formData sẽ gửi lên dạng chuỗi, convert: true trong middleware sẽ ép về số)
     total_amount: Joi.number().min(0).default(0),
     deposit_amount: Joi.number().min(0).default(0)
+});
+
+// Schema cập nhật phiên thuê
+export const updateBookingSchema = Joi.object({
+    guest_name: Joi.string().trim().required().messages({
+        'string.empty': 'Vui lòng nhập họ tên khách hàng.'
+    }),
+    guest_phone: Joi.string().trim().required().messages({
+        'string.empty': 'Vui lòng nhập số điện thoại.'
+    }),
+    guest_email: Joi.string().email().allow(null, '').messages({
+        'string.email': 'Email không đúng định dạng.'
+    }),
+    rent_type: Joi.string().valid('HOURLY', 'DAILY').required().messages({
+        'any.only': 'Hình thức thuê chỉ được là HOURLY hoặc DAILY.'
+    }),
+    expected_checkin: Joi.date().required().messages({
+        'any.required': 'Vui lòng nhập giờ check-in dự kiến.'
+    }),
+    expected_checkout: Joi.date().allow(null, '')
 });

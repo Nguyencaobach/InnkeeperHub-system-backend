@@ -1,5 +1,11 @@
-import { createBookingTransaction } from './booking.model.js';
+import {
+    createBookingTransaction,
+    getActiveBookingByRoomId,
+    updateBookingById,
+    checkoutBookingById
+} from './booking.model.js';
 
+// ── Tạo phiên thuê ────────────────────────────────────────────────────────────
 export const createBookingLogic = async (data, files, user) => {
     // 1. Sinh mã đơn hàng ngẫu nhiên (VD: BKG-123456)
     const randomCode = Math.floor(100000 + Math.random() * 900000);
@@ -31,4 +37,21 @@ export const createBookingLogic = async (data, files, user) => {
     };
 
     return await createBookingTransaction(bookingData);
+};
+
+// ── Lấy phiên thuê đang active theo phòng ────────────────────────────────────
+export const getActiveBookingByRoomLogic = async (roomDetailId) => {
+    const booking = await getActiveBookingByRoomId(roomDetailId);
+    if (!booking) throw new Error('Không có phiên thuê nào đang hoạt động cho phòng này.');
+    return booking;
+};
+
+// ── Cập nhật thông tin phiên thuê ────────────────────────────────────────────
+export const updateBookingLogic = async (id, data) => {
+    return await updateBookingById(id, data);
+};
+
+// ── Thanh toán & Trả phòng ───────────────────────────────────────────────────
+export const checkoutBookingLogic = async (id) => {
+    return await checkoutBookingById(id);
 };
