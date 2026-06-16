@@ -52,7 +52,9 @@ export const updateBooking = async (req, res) => {
 export const checkoutBooking = async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await checkoutBookingLogic(id);
+        const cashier_id = req.user?.id || req.user?.user_id || null;
+        const paymentData = { ...req.body, cashier_id };
+        const result = await checkoutBookingLogic(id, paymentData);
         logActivity(req.user, 'CHECKOUT', 'Phiên thuê', result.booking_code);
         return sendSuccess(res, result, "Thanh toán & Trả phòng thành công!", STATUS_CODES.OK);
     } catch (error) {

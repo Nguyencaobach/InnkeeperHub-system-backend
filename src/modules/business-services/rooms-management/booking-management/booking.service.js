@@ -52,6 +52,6 @@ export const updateBookingLogic = async (id, data) => {
 };
 
 // ── Thanh toán & Trả phòng ───────────────────────────────────────────────────
-export const checkoutBookingLogic = async (id) => {
-    return await checkoutBookingById(id);
+export const checkoutBookingLogic = async (id, paymentData) => {
+    return await checkoutBookingById(id, paymentData);
 };

@@ -19,6 +19,8 @@ import activityLogRoutes from './src/modules/business-services/account-activity/
 import warehouseStatusRoutes from './src/modules/business-services/dashboard/warehouse-status/warehouse_status.route.js'; // Router dashboard tình trạng kho hàng
 import bookingRoutes from './src/modules/business-services/rooms-management/booking-management/booking.route.js'; // Router quản lý phiên thuê phòng
 import bookingServiceItemRoutes from './src/modules/business-services/rooms-management/booking-management/booking-service-item.route.js'; // Router dịch vụ thêm trong phiên thuê
+import profileRoutes from './src/modules/business-services/profile-management/profile.route.js'; // Router hồ sơ cá nhân & thông tin doanh nghiệp
+import billPaymentsRoutes from './src/modules/business-services/account-activity/bill_payments.route.js'; // Router nhật ký hóa đơn
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -51,6 +53,8 @@ app.use('/api/account-activity', activityLogRoutes); // Router quản lý hoạt
 app.use('/api/warehouse-status', warehouseStatusRoutes); // Router quản lý dashboard tình trạng kho hàng
 app.use('/api/bookings', bookingRoutes); // Router quản lý phiên thuê (Booking)
 app.use('/api/booking-service-items', bookingServiceItemRoutes); // Router dịch vụ thêm trong phiên thuê
+app.use('/api/profile', profileRoutes); // Router hồ sơ cá nhân & thông tin doanh nghiệp
+app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đơn thanh toán
 
 initCronJobs();
 

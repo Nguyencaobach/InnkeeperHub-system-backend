@@ -45,10 +45,11 @@ export const updateBookingSchema = Joi.object({
     guest_email: Joi.string().email().allow(null, '').messages({
         'string.email': 'Email không đúng định dạng.'
     }),
-    rent_type: Joi.string().valid('HOURLY', 'DAILY').required().messages({
+    // Frontend không cho sửa rent_type và expected_checkin → optional
+    rent_type: Joi.string().valid('HOURLY', 'DAILY').optional().messages({
         'any.only': 'Hình thức thuê chỉ được là HOURLY hoặc DAILY.'
     }),
-    expected_checkin: Joi.date().required().messages({
+    expected_checkin: Joi.date().optional().messages({
         'any.required': 'Vui lòng nhập giờ check-in dự kiến.'
     }),
     expected_checkout: Joi.date().allow(null, '')

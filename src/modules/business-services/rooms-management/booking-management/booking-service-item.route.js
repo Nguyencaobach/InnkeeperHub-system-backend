@@ -8,6 +8,7 @@ import {
     getServiceCategories,
     getServicesByCategory,
     addGeneralService,
+    updateItemQuantity,
 } from './booking-service-item.controller.js';
 
 const router = express.Router();
@@ -27,6 +28,9 @@ router.get('/services', getServicesByCategory);
 
 // Xóa 1 item (hoàn tồn kho nếu là hàng kho)
 router.delete('/item/:serviceItemId', deleteServiceItem);
+
+// Cập nhật số lượng item
+router.patch('/item/:serviceItemId/quantity', updateItemQuantity);
 
 // ── Dynamic routes ────────────────────────────────────────────────────────────
 

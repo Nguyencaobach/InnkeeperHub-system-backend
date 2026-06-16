@@ -99,3 +99,23 @@ export const uploadCCCDImage = multer({
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn ảnh 5MB
 });
+
+// ==========================================
+// 5. CẤU HÌNH LƯU ẢNH AVATAR NHÂN VIÊN
+// ==========================================
+const avatarStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/avatar/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// Xuất cho chức năng Avatar nhân viên
+export const uploadAvatarImage = multer({ 
+    storage: avatarStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 3 * 1024 * 1024 } // Giới hạn 3MB cho avatar
+});

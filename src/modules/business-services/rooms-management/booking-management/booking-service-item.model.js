@@ -265,3 +265,92 @@ export const addGeneralServiceToBooking = async ({ bookingId, serviceId, service
         client.release();
     }
 };
+
+// ──────────────────────────────────────────────────────────────────────────────
+// CẬP NHẬT SỐ LƯỢNG ITEM (có xử lý đầy đủ tồn kho cho INVENTORY)
+// ──────────────────────────────────────────────────────────────────────────────
+export const updateServiceItemQuantity = async (serviceItemId, newQuantity) => {
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Lấy thông tin item hiện tại
+        const itemRes = await client.query(
+            `SELECT * FROM booking_services WHERE id = $1`,
+            [serviceItemId]
+        );
+        if (itemRes.rowCount === 0) throw new Error('Không tìm thấy dịch vụ.');
+        const item = itemRes.rows[0];
+
+        if (newQuantity < 1) throw new Error('Số lượng phải ít nhất là 1.');
+
+        if (item.service_type === 'INVENTORY' && item.item_id) {
+            const diff = newQuantity - item.quantity; // dương = tăng, âm = giảm
+
+            if (diff > 0) {
+                // Tăng: kiểm tra và trừ thêm tồn kho theo FEFO
+                const stockRes = await client.query(
+                    `SELECT COALESCE(SUM(remain_quantity), 0) AS total_stock
+                     FROM product_batches
+                     WHERE product_id = $1
+                       AND status = 'ACTIVE'
+                       AND (exp_date IS NULL OR exp_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::DATE)`,
+                    [item.item_id]
+                );
+                const totalStock = parseInt(stockRes.rows[0].total_stock, 10);
+                if (totalStock < diff) throw new Error(`Không đủ tồn kho. Hiện còn ${totalStock}.`);
+
+                const batchesRes = await client.query(
+                    `SELECT batch_id, remain_quantity
+                     FROM product_batches
+                     WHERE product_id = $1
+                       AND status = 'ACTIVE'
+                       AND remain_quantity > 0
+                       AND (exp_date IS NULL OR exp_date >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::DATE)
+                     ORDER BY exp_date ASC NULLS LAST, created_at ASC`,
+                    [item.item_id]
+                );
+                let remaining = diff;
+                for (const batch of batchesRes.rows) {
+                    if (remaining <= 0) break;
+                    const deduct = Math.min(remaining, batch.remain_quantity);
+                    await client.query(
+                        `UPDATE product_batches SET remain_quantity = remain_quantity - $1, updated_at = CURRENT_TIMESTAMP WHERE batch_id = $2`,
+                        [deduct, batch.batch_id]
+                    );
+                    remaining -= deduct;
+                }
+            } else if (diff < 0) {
+                // Giảm: hoàn lại tồn kho vào lô gần nhất
+                const absDecrease = Math.abs(diff);
+                const batchRes = await client.query(
+                    `SELECT batch_id FROM product_batches
+                     WHERE product_id = $1 AND status = 'ACTIVE'
+                     ORDER BY exp_date ASC NULLS LAST, created_at ASC
+                     LIMIT 1`,
+                    [item.item_id]
+                );
+                if (batchRes.rowCount > 0) {
+                    await client.query(
+                        `UPDATE product_batches SET remain_quantity = remain_quantity + $1, updated_at = CURRENT_TIMESTAMP WHERE batch_id = $2`,
+                        [absDecrease, batchRes.rows[0].batch_id]
+                    );
+                }
+            }
+        }
+
+        // Cập nhật số lượng trong booking_services
+        const updRes = await client.query(
+            `UPDATE booking_services SET quantity = $1 WHERE id = $2 RETURNING *`,
+            [newQuantity, serviceItemId]
+        );
+
+        await client.query('COMMIT');
+        return updRes.rows[0];
+    } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+    } finally {
+        client.release();
+    }
+};

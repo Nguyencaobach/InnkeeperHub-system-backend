@@ -6,6 +6,7 @@ import {
     getServiceCategoriesService,
     getServicesByCategoryService,
     addGeneralServiceService,
+    updateQuantityService,
 } from './booking-service-item.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
 
@@ -86,5 +87,20 @@ export const addGeneralService = async (req, res) => {
         return sendSuccess(res, result, 'Thêm dịch vụ thành công', STATUS_CODES.CREATED);
     } catch (err) {
         return sendError(res, err.message, STATUS_CODES.BAD_REQUEST);
+    }
+};
+
+// PATCH /api/booking-service-items/item/:serviceItemId/quantity
+export const updateItemQuantity = async (req, res) => {
+    try {
+        const { serviceItemId } = req.params;
+        const { quantity } = req.body;
+        const result = await updateQuantityService(serviceItemId, quantity);
+        return sendSuccess(res, result, 'Cập nhật số lượng thành công');
+    } catch (err) {
+        const status = err.message.includes('Không đủ tồn kho')
+            ? STATUS_CODES.CONFLICT
+            : STATUS_CODES.BAD_REQUEST;
+        return sendError(res, err.message, status);
     }
 };

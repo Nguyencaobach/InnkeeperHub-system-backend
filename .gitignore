@@ -67,4 +67,4 @@ public/
 
 # Bỏ qua file chạy ngrok
 ngrok.exe
-ngrok
+ngrok   

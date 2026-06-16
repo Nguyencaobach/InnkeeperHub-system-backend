@@ -6,6 +6,7 @@ import {
     fetchServiceCategories,
     fetchServicesByCategoryName,
     addGeneralServiceToBooking,
+    updateServiceItemQuantity,
 } from './booking-service-item.model.js';
 
 // Lấy sản phẩm theo danh mục kèm tồn kho hợp lệ
@@ -57,4 +58,10 @@ export const addGeneralServiceService = async (bookingId, body) => {
         quantity: parseInt(quantity, 10),
         unit,
     });
+};
+// Cập nhật số lượng item
+export const updateQuantityService = async (serviceItemId, quantity) => {
+    const qty = parseInt(quantity, 10);
+    if (!qty || qty < 1) throw new Error('Số lượng không hợp lệ.');
+    return await updateServiceItemQuantity(serviceItemId, qty);
 };
