@@ -24,7 +24,7 @@ export const createLogic = async (data, file) => {
     }
 
     // 2. Xử lý ảnh
-    data.image_url = file ? `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/additional-services/${file.filename}` : null;
+    data.image_url = file ? `/uploads/additional-services/${file.filename}` : null;
 
     return await insertService(data);
 };
@@ -47,7 +47,7 @@ export const updateLogic = async (id, data, file) => {
     let image_url = currentService.image_url;
     if (file) {
         deletePhysicalImage(currentService.image_url);
-        image_url = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/additional-services/${file.filename}`;
+        image_url = `/uploads/additional-services/${file.filename}`;
     }
     data.image_url = image_url;
 

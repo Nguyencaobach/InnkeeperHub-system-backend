@@ -39,7 +39,7 @@ export const createLogic = async (data, file) => {
     if (isExist) throw new Error("Tên loại phòng đã tồn tại.");
 
     // Tạo URL ảnh nếu có upload
-    const room_img_url = file ? `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/rooms/${file.filename}` : null;
+    const room_img_url = file ? `/uploads/rooms/${file.filename}` : null;
     
     data.amenities = JSON.stringify(parseAmenities(data.amenities));
     data.room_img_url = room_img_url;
@@ -62,7 +62,7 @@ export const updateLogic = async (id, data, file) => {
     let room_img_url = currentRoom.room_img_url;
     if (file) {
         deletePhysicalImage(currentRoom.room_img_url);
-        room_img_url = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/rooms/${file.filename}`;
+        room_img_url = `/uploads/rooms/${file.filename}`;
     }
 
     // Giữ lại giá trị cũ từ DB nếu Frontend không gửi lên (undefined)

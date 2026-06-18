@@ -62,10 +62,9 @@ export const updateProfileLogic = async (userId, data) => {
  */
 const deleteOldAvatar = (avatarUrl) => {
     if (!avatarUrl) return;
-    // Chỉ xóa file local, không xóa URL ngoài
-    if (avatarUrl.startsWith('http://localhost') || avatarUrl.startsWith('http://127.0.0.1')) {
-        const fileName = avatarUrl.split('/').pop();
-        const filePath = path.join(process.cwd(), 'public', 'uploads', 'avatar', fileName);
+    // Chỉ xóa file local — nhận dạng bằng path tương đối /uploads/
+    if (avatarUrl.startsWith('/uploads/')) {
+        const filePath = path.join(process.cwd(), 'public', avatarUrl);
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
@@ -82,8 +81,8 @@ export const uploadAvatarLogic = async (userId, file) => {
     // Xóa avatar cũ trên ổ cứng
     deleteOldAvatar(currentUser.avatar_url);
 
-    // Tạo URL mới
-    const avatarUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/avatar/${file.filename}`;
+    // Lưu path tương đối vào DB — frontend tự ghép domain qua Vite proxy
+    const avatarUrl = `/uploads/avatar/${file.filename}`;
 
     // Cập nhật vào DB
     return await updateAvatarById(userId, avatarUrl);

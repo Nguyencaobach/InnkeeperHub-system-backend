@@ -36,7 +36,7 @@ export const createLogic = async (data, file) => {
     if (isSkuExist) throw new Error(`Mã SKU (${data.sku}) đã tồn tại. Vui lòng nhập mã khác.`);
 
     // 4. Xử lý ảnh
-    const image_url = file ? `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/products/${file.filename}` : null;
+    const image_url = file ? `/uploads/products/${file.filename}` : null;
     data.image_url = image_url;
 
     return await insertProduct(data);
@@ -65,7 +65,7 @@ export const updateLogic = async (id, data, file) => {
     let image_url = currentProduct.image_url;
     if (file) {
         deletePhysicalImage(currentProduct.image_url);
-        image_url = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/products/${file.filename}`;
+        image_url = `/uploads/products/${file.filename}`;
     }
     data.image_url = image_url;
 
