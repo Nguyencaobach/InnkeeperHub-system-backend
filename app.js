@@ -4,7 +4,8 @@ import path from 'path';
 import morgan from 'morgan'; // Middleware ghi log các request vào console
 import 'dotenv/config';
 
-// Kéo Router của chức năng Đăng nhập vào
+// ====================================================================================================================================================================================
+// Router dành cho doanh nghiệp (business-services)
 import authRouter from './src/modules/business-services/auth/auth.route.js'; // Router quản lý xác thực (đăng nhập, đăng xuất)
 import roomTypeRouter from './src/modules/business-services/rooms-management/room-types/room_type.route.js'; // Router quản lý loại phòng
 import roomDetailRouter from './src/modules/business-services/rooms-management/room-details/room_detail.route.js'; // Router quản lý chi tiết phòng
@@ -21,6 +22,10 @@ import bookingRoutes from './src/modules/business-services/rooms-management/book
 import bookingServiceItemRoutes from './src/modules/business-services/rooms-management/booking-management/booking-service-item.route.js'; // Router dịch vụ thêm trong phiên thuê
 import profileRoutes from './src/modules/business-services/profile-management/profile.route.js'; // Router hồ sơ cá nhân & thông tin doanh nghiệp
 import billPaymentsRoutes from './src/modules/business-services/account-activity/bill_payments.route.js'; // Router nhật ký hóa đơn
+
+// ====================================================================================================================================================================================
+// Router dành cho khách hàng (customer-services)
+import customerAuthRouter from './src/modules/customer-services/auth/auth.route.js'; // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu)
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -39,6 +44,9 @@ app.use(express.static(path.join(process.cwd(), 'public'))); // Cho phép truy c
 // ==========================================
 // GẮN CÁC ROUTER (ĐỊNH TUYẾN)
 // ==========================================
+
+// ====================================================================================================================================================================================
+// Router dành cho doanh nghiệp (business-services)
 app.use('/api/auth', authRouter); // Router quản lý xác thực vào đường dẫn /api/auth (VD: /api/auth/login, /api/auth/logout)
 app.use('/api/room-types', roomTypeRouter); // Router quản lý loại phòng vào đường dẫn /api/room-types
 app.use('/api/room-details', roomDetailRouter); // Router quản lý chi tiết phòng vào đường dẫn /api/room-details    
@@ -55,6 +63,78 @@ app.use('/api/bookings', bookingRoutes); // Router quản lý phiên thuê (Book
 app.use('/api/booking-service-items', bookingServiceItemRoutes); // Router dịch vụ thêm trong phiên thuê
 app.use('/api/profile', profileRoutes); // Router hồ sơ cá nhân & thông tin doanh nghiệp
 app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đơn thanh toán
+
+// ====================================================================================================================================================================================
+// Router dành cho khách hàng (customer-services)
+app.use('/api/customer-auth', customerAuthRouter); // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu, đặt lại mật khẩu)
+
+// ==========================================
+// TRANG CHỦ API — Hiện khi user vào ngrok URL
+// ==========================================
+app.get('/', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InnkeeperHub — API Server</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #f1f5f9;
+    }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    }
+    .icon { font-size: 56px; margin-bottom: 20px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #f1f5f9; }
+    p  { font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 28px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #4ade80;
+      padding: 8px 18px; border-radius: 999px;
+      font-size: 14px; font-weight: 600;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #4ade80;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(1.3); }
+    }
+    .note { margin-top: 24px; font-size: 12px; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🏨</div>
+    <h1>InnkeeperHub API</h1>
+    <p>Máy chủ đang hoạt động bình thường.<br/>Bạn có thể đóng tab này và quay lại hệ thống.</p>
+    <div class="badge">
+      <div class="dot"></div>
+      Server đang chạy
+    </div>
+    <p class="note">* Trang này xác nhận kết nối thành công với máy chủ ảnh.</p>
+  </div>
+</body>
+</html>`);
+});
 
 initCronJobs();
 
