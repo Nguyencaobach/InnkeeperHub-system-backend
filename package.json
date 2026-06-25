@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "ngrok": "ngrok http 3000"
+    "ngrok": "ngrok http 80"
   },
   "keywords": [],
   "author": "",

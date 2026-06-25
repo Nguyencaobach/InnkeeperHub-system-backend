@@ -1,0 +1,31 @@
+version: '3.8'
+
+# docker compose up -d
+# docker compose down
+
+services:
+  # 1. Khởi tạo Redis
+  redis:
+    image: redis:7-alpine
+    container_name: innkeeper_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # 2. Khởi tạo Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: innkeeper_nginx
+    ports:
+      - "80:80"
+    volumes:
+      # Nối file cấu hình Nginx từ máy bạn vào trong container
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Nối thư mục ảnh của bạn vào Nginx để nó đọc trực tiếp
+      - ./public/uploads:/var/www/hotel_management_system/public/uploads:ro
+    extra_hosts:
+      # Giúp Nginx trong Docker có thể gọi ra ngoài Node.js đang chạy trên máy tính (localhost) của bạn
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+    restart: always

@@ -1,0 +1,1 @@
+// Các hàm tương tác với Redis (get, set, del)

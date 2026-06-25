@@ -1,0 +1,1 @@
+// Middleware chặn request để lấy data từ Redis
