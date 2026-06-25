@@ -4,6 +4,8 @@ import {
     forgotPasswordLogic,
 } from './auth.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../shared/utils/response.util.js';
+import { cacheSet } from '../../../shared/services/cache.service.js';
+import jwt from 'jsonwebtoken';
 
 // ============================================================
 // POST /api/customer-auth/register
@@ -47,5 +49,31 @@ export const forgotPasswordController = async (req, res) => {
         return sendSuccess(res, null, result.message, STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
+    }
+};
+
+// ============================================================
+// POST /api/customer-auth/logout
+// Đưa token vào blacklist Redis → vô hiệu ngay lập tức
+// ============================================================
+export const logoutController = async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.split(' ')[1];
+
+        if (token) {
+            const decoded = jwt.decode(token);
+            if (decoded?.exp) {
+                const ttlSeconds = decoded.exp - Math.floor(Date.now() / 1000);
+                if (ttlSeconds > 0) {
+                    await cacheSet(`blacklist:${token}`, '1', ttlSeconds);
+                }
+            }
+        }
+
+        return sendSuccess(res, null, 'Đăng xuất thành công!', STATUS_CODES.OK);
+
+    } catch (error) {
+        return sendError(res, error.message, STATUS_CODES.INTERNAL_ERROR);
     }
 };

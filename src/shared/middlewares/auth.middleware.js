@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { sendError, STATUS_CODES } from '../utils/response.util.js';
+import { cacheExists } from '../services/cache.service.js';
 
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
     try {
         // 1. Lấy token từ header (Frontend sẽ gửi lên dưới dạng: 'Authorization: Bearer <token>')
         const authHeader = req.headers.authorization;
@@ -19,11 +20,18 @@ export const verifyToken = (req, res, next) => {
         // 3. Giải mã và kiểm tra token
         const decoded = jwt.verify(token, secretKey);
 
-        // 4. Lưu thông tin user (gồm id, role...) vào req để các Controller phía sau có thể dùng
+        // 4. Kiểm tra token có trong danh sách blacklist (đã logout) không
+        // Key trong Redis được lưu lúc logout: "blacklist:<token>"
+        const isBlacklisted = await cacheExists(`blacklist:${token}`);
+        if (isBlacklisted) {
+            return sendError(res, "Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại!", STATUS_CODES.UNAUTHORIZED);
+        }
+
+        // 5. Lưu thông tin user (gồm id, role...) vào req để các Controller phía sau có thể dùng
         // Ví dụ: Controller tạo hóa đơn cần biết nhân viên nào tạo, nó chỉ cần gọi req.user.id
         req.user = decoded;
 
-        // 5. Mọi thứ hợp lệ -> Mở cổng cho đi tiếp vào Controller
+        // 6. Mọi thứ hợp lệ -> Mở cổng cho đi tiếp vào Controller
         next();
 
     } catch (error) {

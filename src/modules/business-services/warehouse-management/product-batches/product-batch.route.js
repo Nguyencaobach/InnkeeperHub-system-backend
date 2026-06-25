@@ -3,15 +3,32 @@ import { createBatch, getBatches, updateBatch, deleteBatch } from './product-bat
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { productBatchSchema } from './product-batch.validation.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
+import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
 
 // Bắt buộc đăng nhập
 router.use(verifyToken);
 
-router.get('/', getBatches); // Lưu ý: Hàm GET sẽ đi kèm query parameter: ?product_id=...
-router.post('/', validateData(productBatchSchema), createBatch);
-router.put('/:id', validateData(productBatchSchema), updateBatch);
-router.delete('/:id', deleteBatch);
+// [GET] Danh sách lô hàng — Cache 10 phút
+// Lưu ý: Hàm GET sẽ đi kèm query parameter: ?product_id=...
+router.get('/', withCache('product-batches:all', TTL.NORMAL), getBatches);
+
+// [POST/PUT/DELETE] Ghi DB → Xóa cache
+router.post('/', validateData(productBatchSchema), async (req, res, next) => {
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    next();
+}, createBatch);
+
+router.put('/:id', validateData(productBatchSchema), async (req, res, next) => {
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    next();
+}, updateBatch);
+
+router.delete('/:id', async (req, res, next) => {
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    next();
+}, deleteBatch);
 
 export default router;

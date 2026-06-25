@@ -4,6 +4,8 @@ import { validateData } from '../../../../shared/middlewares/validation.middlewa
 import { uploadCCCDImage } from '../../../../shared/middlewares/upload.middleware.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
 import { bookingSchema, updateBookingSchema } from './booking.validation.js';
+import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
 
@@ -17,18 +19,29 @@ router.post('/',
         { name: 'cccd_back', maxCount: 1 }
     ]), 
     // 2. Validate dữ liệu text (Form Data)
-    validateData(bookingSchema), 
-    // 3. Xử lý logic
+    validateData(bookingSchema),
+    // 3. Xóa cache sau khi tạo
+    async (req, res, next) => {
+        res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+        next();
+    },
+    // 4. Xử lý logic
     createBooking
 );
 
-// [GET] Lấy phiên thuê đang active theo room_detail_id
-router.get('/by-room/:roomDetailId', getActiveBookingByRoom);
+// [GET] Lấy phiên thuê đang active theo room_detail_id — Cache 2 phút
+router.get('/by-room/:roomDetailId', withCache(`bookings:by-room`, TTL.SHORT), getActiveBookingByRoom);
 
 // [PUT] Cập nhật thông tin phiên thuê
-router.put('/:id', validateData(updateBookingSchema), updateBooking);
+router.put('/:id', validateData(updateBookingSchema), async (req, res, next) => {
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+    next();
+}, updateBooking);
 
 // [PATCH] Thanh toán & Trả phòng
-router.patch('/:id/checkout', checkoutBooking);
+router.patch('/:id/checkout', async (req, res, next) => {
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+    next();
+}, checkoutBooking);
 
 export default router;
