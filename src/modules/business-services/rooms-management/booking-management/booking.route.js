@@ -22,7 +22,12 @@ router.post('/',
     validateData(bookingSchema),
     // 3. Xóa cache sau khi tạo
     async (req, res, next) => {
-        res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+        res.on('finish', () => { 
+            if (res.statusCode < 400) {
+                invalidateCache('bookings:*');
+                invalidateCache('room-details:*');
+            }
+        });
         next();
     },
     // 4. Xử lý logic
@@ -34,13 +39,23 @@ router.get('/by-room/:roomDetailId', withCache(`bookings:by-room`, TTL.SHORT), g
 
 // [PUT] Cập nhật thông tin phiên thuê
 router.put('/:id', validateData(updateBookingSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+    res.on('finish', () => { 
+        if (res.statusCode < 400) {
+            invalidateCache('bookings:*');
+            invalidateCache('room-details:*');
+        }
+    });
     next();
 }, updateBooking);
 
 // [PATCH] Thanh toán & Trả phòng
 router.patch('/:id/checkout', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bookings:*'); });
+    res.on('finish', () => { 
+        if (res.statusCode < 400) {
+            invalidateCache('bookings:*');
+            invalidateCache('room-details:*');
+        }
+    });
     next();
 }, checkoutBooking);
 
