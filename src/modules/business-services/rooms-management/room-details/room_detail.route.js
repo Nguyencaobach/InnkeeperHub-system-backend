@@ -16,19 +16,19 @@ router.get('/', withCache('room-details:all', TTL.NORMAL), getAllRoomDetails);
 
 // [POST] Thêm phòng mới: Đi qua Joi kiểm tra dữ liệu -> Đẩy vào Controller
 router.post('/', validateData(roomDetailSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
     next();
 }, createRoomDetail);
 
 // [PUT] Cập nhật thông tin phòng: Đi qua Joi kiểm tra dữ liệu -> Đẩy vào Controller
 router.put('/:id', validateData(roomDetailSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
     next();
 }, updateRoomDetail);
 
 // [DELETE] Xóa phòng (Không cần Joi)
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
     next();
 }, deleteRoomDetail);
 

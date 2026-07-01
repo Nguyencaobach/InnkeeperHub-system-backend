@@ -30,13 +30,13 @@ router.get('/services', withCache('bsi:services', TTL.VERY_LONG), getServicesByC
 
 // Xóa 1 item (hoàn tồn kho nếu là hàng kho)
 router.delete('/item/:serviceItemId', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*'); });
     next();
 }, deleteServiceItem);
 
 // Cập nhật số lượng item
 router.patch('/item/:serviceItemId/quantity', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'customer:*bsi:*'); });
     next();
 }, updateItemQuantity);
 
@@ -47,13 +47,13 @@ router.get('/:bookingId', withCache('bsi:items', TTL.SHORT), getServiceItems);
 
 // Thêm hàng kho vào phiên thuê (trừ tồn kho FEFO)
 router.post('/:bookingId/inventory', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*'); });
     next();
 }, addInventoryItem);
 
 // Thêm dịch vụ đi kèm vào phiên thuê
 router.post('/:bookingId/general', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'customer:*bsi:*'); });
     next();
 }, addGeneralService);
 

@@ -24,8 +24,8 @@ router.post('/',
     async (req, res, next) => {
         res.on('finish', () => { 
             if (res.statusCode < 400) {
-                invalidateCache('bookings:*');
-                invalidateCache('room-details:*');
+                invalidateCache('bookings:*', 'customer:*bookings:*');
+                invalidateCache('room-details:*', 'customer:*room-details:*');
             }
         });
         next();
@@ -41,8 +41,8 @@ router.get('/by-room/:roomDetailId', withCache(`bookings:by-room`, TTL.SHORT), g
 router.put('/:id', validateData(updateBookingSchema), async (req, res, next) => {
     res.on('finish', () => { 
         if (res.statusCode < 400) {
-            invalidateCache('bookings:*');
-            invalidateCache('room-details:*');
+            invalidateCache('bookings:*', 'customer:*bookings:*');
+            invalidateCache('room-details:*', 'customer:*room-details:*');
         }
     });
     next();
@@ -52,8 +52,8 @@ router.put('/:id', validateData(updateBookingSchema), async (req, res, next) => 
 router.patch('/:id/checkout', async (req, res, next) => {
     res.on('finish', () => { 
         if (res.statusCode < 400) {
-            invalidateCache('bookings:*');
-            invalidateCache('room-details:*');
+            invalidateCache('bookings:*', 'customer:*bookings:*');
+            invalidateCache('room-details:*', 'customer:*room-details:*');
         }
     });
     next();

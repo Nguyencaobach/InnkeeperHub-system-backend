@@ -17,19 +17,19 @@ router.get('/', withCache('room-types:all', TTL.VERY_LONG), getAllRoomTypes);
 
 // Thêm mới: Nhận ảnh (single) -> Joi kiểm tra -> Đẩy vào Controller -> Xóa cache
 router.post('/', uploadRoomImage.single('image'), validateData(roomTypeSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*', 'customer:*room-types:*'); });
     next();
 }, createRoomType);
 
 // Cập nhật: Tương tự thêm mới
 router.put('/:id', uploadRoomImage.single('image'), validateData(roomTypeSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*', 'customer:*room-types:*'); });
     next();
 }, updateRoomType);
 
 // Xóa (Không cần Joi)
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-types:*', 'customer:*room-types:*'); });
     next();
 }, deleteRoomType);
 

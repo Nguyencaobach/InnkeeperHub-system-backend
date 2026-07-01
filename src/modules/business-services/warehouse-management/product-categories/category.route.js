@@ -16,17 +16,17 @@ router.get('/', withCache('product-categories:all', TTL.VERY_LONG), getAllCatego
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache
 router.post('/', validateData(createCategorySchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
     next();
 }, createCategory);
 
 router.put('/:id', validateData(updateCategorySchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
     next();
 }, updateCategory);
 
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
     next();
 }, deleteCategory);
 

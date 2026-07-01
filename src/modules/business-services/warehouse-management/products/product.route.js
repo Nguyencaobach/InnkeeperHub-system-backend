@@ -16,17 +16,17 @@ router.get('/', withCache('products:all', TTL.LONG), getAllProducts);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache sản phẩm
 router.post('/', uploadProductImage.single('image'), validateData(productSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
     next();
 }, createProduct);
 
 router.put('/:id', uploadProductImage.single('image'), validateData(productSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
     next();
 }, updateProduct);
 
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
     next();
 }, deleteProduct);
 

@@ -16,17 +16,17 @@ router.get('/', withCache('discounts:all', TTL.SHORT), getAllDiscounts);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache
 router.post('/', validateData(discountSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*', 'customer:*discounts:*'); });
     next();
 }, createDiscount);
 
 router.put('/:id', validateData(discountSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*', 'customer:*discounts:*'); });
     next();
 }, updateDiscount);
 
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('discounts:*', 'customer:*discounts:*'); });
     next();
 }, deleteDiscount);
 

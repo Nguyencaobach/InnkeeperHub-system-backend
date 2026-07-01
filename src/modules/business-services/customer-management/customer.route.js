@@ -16,19 +16,19 @@ router.get('/', withCache('customers:all', TTL.NORMAL), getAllCustomers);
 
 // [POST] Thêm mới
 router.post('/', validateData(createCustomerSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
     next();
 }, createCustomer);
 
 // [PUT] Cập nhật
 router.put('/:id', validateData(updateCustomerSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
     next();
 }, updateCustomer);
 
 // [DELETE] Xóa
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
     next();
 }, deleteCustomer);
 

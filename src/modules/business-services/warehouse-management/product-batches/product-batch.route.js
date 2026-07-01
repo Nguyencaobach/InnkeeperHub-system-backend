@@ -17,17 +17,17 @@ router.get('/', withCache('product-batches:all', TTL.NORMAL), getBatches);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache
 router.post('/', validateData(productBatchSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
     next();
 }, createBatch);
 
 router.put('/:id', validateData(productBatchSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
     next();
 }, updateBatch);
 
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
     next();
 }, deleteBatch);
 

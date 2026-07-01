@@ -16,17 +16,17 @@ router.get('/', withCache('services:all', TTL.VERY_LONG), getAllServices);
 
 // Khi gọi POST/PUT, Multer xử lý file 'image' trước, sau đó Joi check text, cuối cùng vào Controller
 router.post('/', uploadAdditionalServiceImage.single('image'), validateData(serviceSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*', 'customer:*services:*'); });
     next();
 }, createService);
 
 router.put('/:id', uploadAdditionalServiceImage.single('image'), validateData(serviceSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*', 'customer:*services:*'); });
     next();
 }, updateService);
 
 router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*'); });
+    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('services:*', 'customer:*services:*'); });
     next();
 }, deleteService);
 
