@@ -26,6 +26,7 @@ import billPaymentsRoutes from './src/modules/business-services/account-activity
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
 import customerAuthRouter from './src/modules/customer-services/auth/auth.route.js'; // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu)
+import discoverRoomTypeRouter from './src/modules/customer-services/discover/room-types/room-types.route.js'; // Router discover loại phòng cho khách hàng
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -67,6 +68,7 @@ app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đ�
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
 app.use('/api/customer-auth', customerAuthRouter); // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu, đặt lại mật khẩu)
+app.use('/api/discover/room-types', discoverRoomTypeRouter); // Router discover loại phòng cho khách hàng
 
 // ==========================================
 // TRANG CHỦ API — Hiện khi user vào ngrok URL
