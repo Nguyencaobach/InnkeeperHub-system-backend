@@ -4,7 +4,7 @@ import { validateData } from '../../../../shared/middlewares/validation.middlewa
 import { productSchema } from './product.validation.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
 import { uploadProductImage } from '../../../../shared/middlewares/upload.middleware.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -15,19 +15,10 @@ router.use(verifyToken);
 router.get('/', withCache('products:all', TTL.LONG), getAllProducts);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache sản phẩm
-router.post('/', uploadProductImage.single('image'), validateData(productSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
-    next();
-}, createProduct);
+router.post('/', uploadProductImage.single('image'), validateData(productSchema), createProduct);
 
-router.put('/:id', uploadProductImage.single('image'), validateData(productSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
-    next();
-}, updateProduct);
+router.put('/:id', uploadProductImage.single('image'), validateData(productSchema), updateProduct);
 
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('products:*', 'customer:*products:*'); });
-    next();
-}, deleteProduct);
+router.delete('/:id', deleteProduct);
 
 export default router;

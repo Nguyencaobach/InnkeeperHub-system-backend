@@ -3,7 +3,7 @@ import { createRoomDetail, getAllRoomDetails, updateRoomDetail, deleteRoomDetail
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { roomDetailSchema } from './room_detail.validation.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -15,21 +15,12 @@ router.use(verifyToken);
 router.get('/', withCache('room-details:all', TTL.NORMAL), getAllRoomDetails);
 
 // [POST] Thêm phòng mới: Đi qua Joi kiểm tra dữ liệu -> Đẩy vào Controller
-router.post('/', validateData(roomDetailSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
-    next();
-}, createRoomDetail);
+router.post('/', validateData(roomDetailSchema), createRoomDetail);
 
 // [PUT] Cập nhật thông tin phòng: Đi qua Joi kiểm tra dữ liệu -> Đẩy vào Controller
-router.put('/:id', validateData(roomDetailSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
-    next();
-}, updateRoomDetail);
+router.put('/:id', validateData(roomDetailSchema), updateRoomDetail);
 
 // [DELETE] Xóa phòng (Không cần Joi)
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('room-details:*', 'customer:*room-details:*'); });
-    next();
-}, deleteRoomDetail);
+router.delete('/:id', deleteRoomDetail);
 
 export default router;

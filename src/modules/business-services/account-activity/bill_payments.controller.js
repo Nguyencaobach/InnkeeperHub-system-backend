@@ -1,5 +1,6 @@
 import { getAllBillsLogic, getBillByIdLogic, deleteBillLogic } from './bill_payments.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../shared/utils/response.util.js';
+import { invalidateCache } from '../../../shared/middlewares/cache.middleware.js';
 
 // ── GET /api/bill-payments ─────────────────────────────────────────
 export const getAllBills = async (req, res) => {
@@ -31,6 +32,7 @@ export const deleteBill = async (req, res) => {
     try {
         const { id } = req.params;
         const result = await deleteBillLogic(id);
+        await invalidateCache('bill-payments:*');
         return sendSuccess(res, result, `Đã xóa hóa đơn ${id}`, STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);

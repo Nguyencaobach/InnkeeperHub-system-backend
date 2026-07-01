@@ -9,6 +9,7 @@ import {
     updateQuantityService,
 } from './booking-service-item.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
+import { invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
 
 // GET /api/booking-service-items/products?categoryId=xxx
 export const getProductsByCategory = async (req, res) => {
@@ -37,6 +38,7 @@ export const addInventoryItem = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const result = await addInventoryItemService(bookingId, req.body);
+        await invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*');
         return sendSuccess(res, result, 'Thêm hàng hóa thành công', STATUS_CODES.CREATED);
     } catch (err) {
         const status = err.message.includes('Không đủ tồn kho')
@@ -51,6 +53,7 @@ export const deleteServiceItem = async (req, res) => {
     try {
         const { serviceItemId } = req.params;
         const result = await removeServiceItemService(serviceItemId);
+        await invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*');
         return sendSuccess(res, result, 'Đã xóa dịch vụ thành công');
     } catch (err) {
         return sendError(res, err.message, STATUS_CODES.INTERNAL_ERROR);
@@ -84,6 +87,7 @@ export const addGeneralService = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const result = await addGeneralServiceService(bookingId, req.body);
+        await invalidateCache('bsi:*', 'customer:*bsi:*');
         return sendSuccess(res, result, 'Thêm dịch vụ thành công', STATUS_CODES.CREATED);
     } catch (err) {
         return sendError(res, err.message, STATUS_CODES.BAD_REQUEST);
@@ -96,6 +100,7 @@ export const updateItemQuantity = async (req, res) => {
         const { serviceItemId } = req.params;
         const { quantity } = req.body;
         const result = await updateQuantityService(serviceItemId, quantity);
+        await invalidateCache('bsi:*', 'customer:*bsi:*');
         return sendSuccess(res, result, 'Cập nhật số lượng thành công');
     } catch (err) {
         const status = err.message.includes('Không đủ tồn kho')

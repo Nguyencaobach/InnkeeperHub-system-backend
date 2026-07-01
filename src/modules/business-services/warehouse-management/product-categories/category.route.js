@@ -3,7 +3,7 @@ import { createCategory, getAllCategories, updateCategory, deleteCategory } from
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { createCategorySchema, updateCategorySchema } from './category.validation.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -15,19 +15,10 @@ router.use(verifyToken);
 router.get('/', withCache('product-categories:all', TTL.VERY_LONG), getAllCategories);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache
-router.post('/', validateData(createCategorySchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
-    next();
-}, createCategory);
+router.post('/', validateData(createCategorySchema), createCategory);
 
-router.put('/:id', validateData(updateCategorySchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
-    next();
-}, updateCategory);
+router.put('/:id', validateData(updateCategorySchema), updateCategory);
 
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-categories:*', 'customer:*product-categories:*'); });
-    next();
-}, deleteCategory);
+router.delete('/:id', deleteCategory);
 
 export default router;

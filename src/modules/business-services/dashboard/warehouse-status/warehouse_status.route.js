@@ -3,7 +3,7 @@ import { getWarehouseDashboard, discardBatch } from './warehouse_status.controll
 import { discardBatchSchema } from './warehouse_status.validation.js';
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -15,13 +15,6 @@ router.use(verifyToken);
 router.get('/dashboard', withCache('warehouse-status:dashboard', TTL.VERY_SHORT), getWarehouseDashboard);
 
 // [PUT] API Tiêu hủy lô hàng chết (Cập nhật tồn kho = 0) → Xóa cache
-router.put('/discard/:batchId', validateData(discardBatchSchema), async (req, res, next) => {
-    res.on('finish', () => {
-        if (res.statusCode < 400) {
-            invalidateCache('warehouse-status:*', 'product-batches:*', 'products:*');
-        }
-    });
-    next();
-}, discardBatch);
+router.put('/discard/:batchId', validateData(discardBatchSchema), discardBatch);
 
 export default router;

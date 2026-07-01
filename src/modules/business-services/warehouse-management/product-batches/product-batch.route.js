@@ -3,7 +3,7 @@ import { createBatch, getBatches, updateBatch, deleteBatch } from './product-bat
 import { validateData } from '../../../../shared/middlewares/validation.middleware.js';
 import { productBatchSchema } from './product-batch.validation.js';
 import { verifyToken } from '../../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -16,19 +16,10 @@ router.use(verifyToken);
 router.get('/', withCache('product-batches:all', TTL.NORMAL), getBatches);
 
 // [POST/PUT/DELETE] Ghi DB → Xóa cache
-router.post('/', validateData(productBatchSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
-    next();
-}, createBatch);
+router.post('/', validateData(productBatchSchema), createBatch);
 
-router.put('/:id', validateData(productBatchSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
-    next();
-}, updateBatch);
+router.put('/:id', validateData(productBatchSchema), updateBatch);
 
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('product-batches:*', 'customer:*product-batches:*'); });
-    next();
-}, deleteBatch);
+router.delete('/:id', deleteBatch);
 
 export default router;

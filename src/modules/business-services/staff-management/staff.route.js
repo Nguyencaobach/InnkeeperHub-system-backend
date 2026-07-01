@@ -3,7 +3,7 @@ import { createStaff, getAllStaff, updateStaff, deleteStaff } from './staff.cont
 import { createStaffSchema, updateStaffSchema } from './staff.validation.js';
 import { validateData } from '../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -16,21 +16,12 @@ router.use(verifyToken);
 router.get('/', withCache('staff:all', TTL.NORMAL), getAllStaff);
 
 // [POST] Thêm nhân viên mới: Đi qua Joi kiểm tra dữ liệu -> Controller
-router.post('/', validateData(createStaffSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('staff:*'); });
-    next();
-}, createStaff);
+router.post('/', validateData(createStaffSchema), createStaff);
 
 // [PUT] Cập nhật nhân viên: Đi qua Joi (schema update) -> Controller
-router.put('/:id', validateData(updateStaffSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('staff:*'); });
-    next();
-}, updateStaff);
+router.put('/:id', validateData(updateStaffSchema), updateStaff);
 
 // [DELETE] Khóa tài khoản nhân viên
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('staff:*'); });
-    next();
-}, deleteStaff);
+router.delete('/:id', deleteStaff);
 
 export default router;

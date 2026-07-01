@@ -10,7 +10,7 @@ import {
     addGeneralService,
     updateItemQuantity,
 } from './booking-service-item.controller.js';
-import { withCache, invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -29,16 +29,10 @@ router.get('/service-categories', withCache('bsi:service-categories', TTL.VERY_L
 router.get('/services', withCache('bsi:services', TTL.VERY_LONG), getServicesByCategory);
 
 // Xóa 1 item (hoàn tồn kho nếu là hàng kho)
-router.delete('/item/:serviceItemId', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*'); });
-    next();
-}, deleteServiceItem);
+router.delete('/item/:serviceItemId', deleteServiceItem);
 
 // Cập nhật số lượng item
-router.patch('/item/:serviceItemId/quantity', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'customer:*bsi:*'); });
-    next();
-}, updateItemQuantity);
+router.patch('/item/:serviceItemId/quantity', updateItemQuantity);
 
 // ── Dynamic routes ────────────────────────────────────────────────────────────
 
@@ -46,15 +40,9 @@ router.patch('/item/:serviceItemId/quantity', async (req, res, next) => {
 router.get('/:bookingId', withCache('bsi:items', TTL.SHORT), getServiceItems);
 
 // Thêm hàng kho vào phiên thuê (trừ tồn kho FEFO)
-router.post('/:bookingId/inventory', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'products:*', 'customer:*bsi:*', 'customer:*products:*'); });
-    next();
-}, addInventoryItem);
+router.post('/:bookingId/inventory', addInventoryItem);
 
 // Thêm dịch vụ đi kèm vào phiên thuê
-router.post('/:bookingId/general', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bsi:*', 'customer:*bsi:*'); });
-    next();
-}, addGeneralService);
+router.post('/:bookingId/general', addGeneralService);
 
 export default router;

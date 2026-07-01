@@ -1,6 +1,7 @@
 import { getDashboardLogic, discardBatchLogic } from './warehouse_status.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
 import { logActivity } from '../../../../shared/utils/activity.helper.js';
+import { invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
 
 export const getWarehouseDashboard = async (req, res) => {
     try {
@@ -27,6 +28,7 @@ export const discardBatch = async (req, res) => {
             { note: `Tiêu hủy hàng hóa. Lý do: ${reason}` }
         );
 
+        await invalidateCache('warehouse-status:*', 'product-batches:*', 'products:*');
         return sendSuccess(res, result, "Đã tiêu hủy lô hàng thành công", STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);

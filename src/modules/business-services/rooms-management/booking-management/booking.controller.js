@@ -6,6 +6,7 @@ import {
 } from './booking.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
 import { logActivity } from '../../../../shared/utils/activity.helper.js';
+import { invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
 
 // ── Tạo phiên thuê ────────────────────────────────────────────────────────────
 export const createBooking = async (req, res) => {
@@ -16,6 +17,7 @@ export const createBooking = async (req, res) => {
         // Ghi log hoạt động
         logActivity(req.user, 'CREATE', 'Phiên thuê', result.booking_code);
         
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
         return sendSuccess(res, result, "Tạo phiên thuê thành công!", STATUS_CODES.CREATED);
     } catch (error) {
         console.error("Lỗi tạo Booking:", error);
@@ -41,6 +43,7 @@ export const updateBooking = async (req, res) => {
         const { id } = req.params;
         const result = await updateBookingLogic(id, req.body);
         logActivity(req.user, 'UPDATE', 'Phiên thuê', result.booking_code);
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
         return sendSuccess(res, result, "Cập nhật phiên thuê thành công!", STATUS_CODES.OK);
     } catch (error) {
         console.error("Lỗi cập nhật Booking:", error);
@@ -56,6 +59,7 @@ export const checkoutBooking = async (req, res) => {
         const paymentData = { ...req.body, cashier_id };
         const result = await checkoutBookingLogic(id, paymentData);
         logActivity(req.user, 'CHECKOUT', 'Phiên thuê', result.booking_code);
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
         return sendSuccess(res, result, "Thanh toán & Trả phòng thành công!", STATUS_CODES.OK);
     } catch (error) {
         console.error("Lỗi checkout Booking:", error);

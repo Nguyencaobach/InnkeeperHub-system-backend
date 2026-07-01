@@ -3,7 +3,7 @@ import { createCustomer, getAllCustomers, updateCustomer, deleteCustomer } from 
 import { createCustomerSchema, updateCustomerSchema } from './customer.validation.js';
 import { validateData } from '../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
-import { withCache, invalidateCache } from '../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -15,21 +15,12 @@ router.use(verifyToken);
 router.get('/', withCache('customers:all', TTL.NORMAL), getAllCustomers);
 
 // [POST] Thêm mới
-router.post('/', validateData(createCustomerSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
-    next();
-}, createCustomer);
+router.post('/', validateData(createCustomerSchema), createCustomer);
 
 // [PUT] Cập nhật
-router.put('/:id', validateData(updateCustomerSchema), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
-    next();
-}, updateCustomer);
+router.put('/:id', validateData(updateCustomerSchema), updateCustomer);
 
 // [DELETE] Xóa
-router.delete('/:id', async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('customers:*', 'customer:*customers:*'); });
-    next();
-}, deleteCustomer);
+router.delete('/:id', deleteCustomer);
 
 export default router;

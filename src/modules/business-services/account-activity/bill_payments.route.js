@@ -2,7 +2,7 @@ import express from 'express';
 import { getAllBills, getBillById, deleteBill } from './bill_payments.controller.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
 import { requireRole } from '../../../shared/middlewares/role.middleware.js';
-import { withCache, invalidateCache } from '../../../shared/middlewares/cache.middleware.js';
+import { withCache } from '../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -19,9 +19,6 @@ router.get('/', withCache('bill-payments:all', TTL.SHORT), getAllBills);
 router.get('/:id', withCache('bill-payments:detail', TTL.SHORT), getBillById);
 
 // ── Xóa hóa đơn (chỉ ADMIN)
-router.delete('/:id', requireRole(['ADMIN']), async (req, res, next) => {
-    res.on('finish', () => { if (res.statusCode < 400) invalidateCache('bill-payments:*'); });
-    next();
-}, deleteBill);
+router.delete('/:id', requireRole(['ADMIN']), deleteBill);
 
 export default router;

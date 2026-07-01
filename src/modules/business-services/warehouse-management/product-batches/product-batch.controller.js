@@ -1,11 +1,13 @@
 import { createLogic, getListLogic, updateLogic, deleteLogic } from './product-batch.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
 import { logActivity } from '../../../../shared/utils/activity.helper.js';
+import { invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
 
 export const createBatch = async (req, res) => {
     try {
         const result = await createLogic(req.body);
         logActivity(req.user, 'CREATE', 'Lô nhập kho', result.batch_code || result.product_name || `ID: ${result.batch_id}`);
+        await invalidateCache('product-batches:*', 'customer:*product-batches:*');
         return sendSuccess(res, result, "Thêm lô hàng thành công", STATUS_CODES.CREATED);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
@@ -29,6 +31,7 @@ export const updateBatch = async (req, res) => {
         const { id } = req.params;
         const result = await updateLogic(id, req.body);
         logActivity(req.user, 'UPDATE', 'Lô nhập kho', result.batch_code || result.product_name || `ID: ${id}`);
+        await invalidateCache('product-batches:*', 'customer:*product-batches:*');
         return sendSuccess(res, result, "Cập nhật lô hàng thành công", STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
@@ -40,6 +43,7 @@ export const deleteBatch = async (req, res) => {
         const { id } = req.params;
         const result = await deleteLogic(id);
         logActivity(req.user, 'DELETE', 'Lô nhập kho', result?.batch_code || `ID: ${id}`);
+        await invalidateCache('product-batches:*', 'customer:*product-batches:*');
         return sendSuccess(res, null, "Xóa lô hàng thành công", STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);

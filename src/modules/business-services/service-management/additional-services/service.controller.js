@@ -1,11 +1,13 @@
 import { createLogic, getListLogic, updateLogic, deleteLogic } from './service.service.js';
 import { sendSuccess, sendError, STATUS_CODES } from '../../../../shared/utils/response.util.js';
 import { logActivity } from '../../../../shared/utils/activity.helper.js';
+import { invalidateCache } from '../../../../shared/middlewares/cache.middleware.js';
 
 export const createService = async (req, res) => {
     try {
         const result = await createLogic(req.body, req.file);
         logActivity(req.user, 'CREATE', 'Dịch vụ', result.name);
+        await invalidateCache('services:*', 'customer:*services:*');
         return sendSuccess(res, result, "Thêm dịch vụ thành công", STATUS_CODES.CREATED);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
@@ -28,6 +30,7 @@ export const updateService = async (req, res) => {
         const { id } = req.params;
         const result = await updateLogic(id, req.body, req.file);
         logActivity(req.user, 'UPDATE', 'Dịch vụ', result.name);
+        await invalidateCache('services:*', 'customer:*services:*');
         return sendSuccess(res, result, "Cập nhật dịch vụ thành công", STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
@@ -39,6 +42,7 @@ export const deleteService = async (req, res) => {
         const { id } = req.params;
         const result = await deleteLogic(id);
         logActivity(req.user, 'DELETE', 'Dịch vụ', result?.name || `ID: ${id}`);
+        await invalidateCache('services:*', 'customer:*services:*');
         return sendSuccess(res, null, "Xóa dịch vụ thành công", STATUS_CODES.OK);
     } catch (error) {
         return sendError(res, error.message, STATUS_CODES.BAD_REQUEST);
