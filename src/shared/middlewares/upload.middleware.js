@@ -61,7 +61,9 @@ const cccdStorage = multer.diskStorage({
 // BỘ LỌC CHUNG: Chỉ cho phép file ảnh
 // ==========================================
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const isImageExt = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.heic', '.bmp'].includes(ext);
+    if (file.mimetype.startsWith('image/') || isImageExt) {
         cb(null, true);
     } else {
         cb(new Error('Chỉ được phép upload file ảnh!'), false);
@@ -118,4 +120,24 @@ export const uploadAvatarImage = multer({
     storage: avatarStorage,
     fileFilter: fileFilter,
     limits: { fileSize: 3 * 1024 * 1024 } // Giới hạn 3MB cho avatar
+});
+
+// ==========================================
+// 6. CẤU HÌNH LƯU ẢNH AVATAR KHÁCH HÀNG (CUSTOMER)
+// ==========================================
+const customerAvatarStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/customer-avatar/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'customer-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// Xuất cho chức năng Avatar Khách hàng
+export const uploadCustomerAvatar = multer({ 
+    storage: customerAvatarStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 3 * 1024 * 1024 } // Giới hạn 3MB
 });
