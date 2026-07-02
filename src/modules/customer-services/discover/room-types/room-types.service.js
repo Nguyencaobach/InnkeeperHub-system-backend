@@ -1,13 +1,16 @@
 import roomTypeModel from './room-types.model.js';
 
 class CustomerRoomTypeService {
-    /**
-     * Lấy toàn bộ danh sách loại phòng cho khách hàng
-     */
     async getAllRoomTypes() {
-        const roomTypes = await roomTypeModel.getAllRoomTypes();
-        // Trả về trực tiếp mảng dữ liệu
-        return roomTypes;
+        return await roomTypeModel.getAllRoomTypes();
+    }
+
+    async submitRating(roomTypeId, customerId, rating) {
+        if (!roomTypeId) throw new Error('Thiếu mã loại phòng.');
+        if (!customerId) throw new Error('Thiếu thông tin khách hàng (chưa đăng nhập).');
+
+        // Gọi model lưu xuống CSDL
+        return await roomTypeModel.rateRoomType(roomTypeId, customerId, rating);
     }
 }
 
