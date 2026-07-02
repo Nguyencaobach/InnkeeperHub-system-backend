@@ -26,7 +26,7 @@ import billPaymentsRoutes from './src/modules/business-services/account-activity
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
 import customerAuthRouter from './src/modules/customer-services/auth/auth.route.js'; // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu)
-import discoverRoomTypeRouter from './src/modules/customer-services/discover/room-types/room-types.route.js'; // Router discover loại phòng cho khách hàng
+import discoverRoomRouter from './src/modules/customer-services/discover/rooms/room.route.js'; // Router discover phòng cho khách hàng
 import customerProfileRouter from './src/modules/customer-services/profile/profile.route.js'; // Router hồ sơ cá nhân của khách hàng
 
 
@@ -69,7 +69,7 @@ app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đ�
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
 app.use('/api/customer-auth', customerAuthRouter); // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu, đặt lại mật khẩu)
-app.use('/api/discover/room-types', discoverRoomTypeRouter); // Router discover loại phòng cho khách hàng
+app.use('/api/discover/rooms', discoverRoomRouter); // Router discover phòng cho khách hàng
 app.use('/api/customer', customerProfileRouter); // Router hồ sơ cá nhân của khách hàng (api/customer/profile, api/customer/avatar)
 
 // ==========================================

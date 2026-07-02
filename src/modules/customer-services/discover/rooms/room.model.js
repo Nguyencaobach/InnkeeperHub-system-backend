@@ -1,6 +1,6 @@
 import pool from '../../../../shared/database/db.js';
 
-class CustomerRoomTypeModel {
+class CustomerRoomModel {
     /**
      * Lấy danh sách tất cả các loại phòng KÈM THEO điểm đánh giá trung bình
      */
@@ -32,6 +32,24 @@ class CustomerRoomTypeModel {
     }
 
     /**
+     * Lấy danh sách các phòng chi tiết thuộc một loại phòng
+     */
+    async getRoomsByType(roomTypeId) {
+        const query = `
+            SELECT 
+                id,
+                room_type_id,
+                room_number,
+                status
+            FROM room_details
+            WHERE room_type_id = $1
+            ORDER BY room_number ASC;
+        `;
+        const result = await pool.query(query, [roomTypeId]);
+        return result.rows;
+    }
+
+    /**
      * Thêm hoặc Cập nhật đánh giá sao
      */
     async rateRoomType(roomTypeId, customerId, rating) {
@@ -50,4 +68,4 @@ class CustomerRoomTypeModel {
     }
 }
 
-export default new CustomerRoomTypeModel();
+export default new CustomerRoomModel();
