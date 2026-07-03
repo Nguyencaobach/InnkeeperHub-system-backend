@@ -1,5 +1,6 @@
 import { verifyWebhookData } from './payos.service.js';
 import { updatePaymentStatusByOrderCode, insertPaymentTransaction } from './payos.model.js';
+import { sendBookingConfirmationEmail } from '../../email-services/templates/booking-confirmation.email.js';
 
 export const handlePayOSWebhook = async (req, res) => {
     try {
@@ -38,6 +39,24 @@ export const handlePayOSWebhook = async (req, res) => {
                 console.log(`   - Số tiền nhận được: ${amount.toLocaleString('vi-VN')} VNĐ`);
                 console.log(`   - Mã giao dịch ngân hàng: ${transactionId}`);
                 console.log('======================================================\n');
+
+                // Gửi email xác nhận đặt phòng cho khách hàng (fire-and-forget)
+                sendBookingConfirmationEmail({
+                    guest_name: updatedBooking.customer_full_name || updatedBooking.guest_name,
+                    customer_email: updatedBooking.customer_email,
+                    guest_email: updatedBooking.guest_email,
+                    booking_code: updatedBooking.booking_code,
+                    order_code: orderCode,
+                    room_number: updatedBooking.room_number,
+                    room_type_name: updatedBooking.room_type_name,
+                    check_in: updatedBooking.expected_checkin,
+                    check_out: updatedBooking.expected_checkout,
+                    rent_type: updatedBooking.rent_type,
+                    total_amount: updatedBooking.total_amount,
+                    deposit_amount: updatedBooking.deposit_amount,
+                    transaction_id: transactionId,
+                    payment_date: webhookBody.data.transactionDateTime,
+                });
             } else {
                 console.log(`⚠️ [PAYOS WEBHOOK] Đã nhận thanh toán cho OrderCode: ${orderCode} nhưng không tìm thấy đơn trong DB!`);
             }
