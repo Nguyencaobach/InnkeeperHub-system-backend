@@ -58,6 +58,19 @@ const cccdStorage = multer.diskStorage({
 });
 
 // ==========================================
+// 4.5. CẤU HÌNH LƯU ẢNH CCCD DÀNH CHO ĐẶT PHÒNG TẠM THỜI (MỚI)
+// ==========================================
+const cccdForReservedStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/cccd_for_reserved/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-reserved-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// ==========================================
 // BỘ LỌC CHUNG: Chỉ cho phép file ảnh
 // ==========================================
 const fileFilter = (req, file, cb) => {
@@ -98,6 +111,13 @@ export const uploadAdditionalServiceImage = multer({
 // XUẤT THÊM MIDDLEWARE CHO CCCD
 export const uploadCCCDImage = multer({ 
     storage: cccdStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn ảnh 5MB
+});
+
+// XUẤT THÊM MIDDLEWARE CHO CCCD DÀNH CHO KHÁCH LẺ (BOOKING)
+export const uploadCCCDForReservedImage = multer({ 
+    storage: cccdForReservedStorage,
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // Giới hạn ảnh 5MB
 });

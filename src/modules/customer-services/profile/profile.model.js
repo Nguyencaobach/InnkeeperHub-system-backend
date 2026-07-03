@@ -5,7 +5,7 @@ export const fetchCustomerProfileById = async (customerId) => {
     const query = `
         SELECT 
             customer_id, username, full_name, email, 
-            phone_number, avatar_url, is_active, created_at, updated_at
+            phone_number, avatar_url, cccd_front_url, cccd_back_url, is_active, created_at, updated_at
         FROM customers
         WHERE customer_id = $1 AND is_active = TRUE
     `;
@@ -47,7 +47,7 @@ export const updateCustomerProfileById = async (customerId, data) => {
         UPDATE customers
         SET ${setClauses.join(', ')}
         WHERE customer_id = $${values.length}
-        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, updated_at
+        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, cccd_front_url, cccd_back_url, updated_at
     `;
     
     const result = await db.query(query, values);
@@ -60,8 +60,39 @@ export const updateCustomerAvatarById = async (customerId, avatarUrl) => {
         UPDATE customers
         SET avatar_url = $1, updated_at = CURRENT_TIMESTAMP
         WHERE customer_id = $2
-        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, updated_at
+        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, cccd_front_url, cccd_back_url, updated_at
     `;
     const result = await db.query(query, [avatarUrl, customerId]);
+    return result.rows[0];
+};
+
+// 5. Cập nhật link CCCD
+export const updateCustomerCCCDById = async (customerId, frontUrl, backUrl) => {
+    let setClauses = ['updated_at = CURRENT_TIMESTAMP'];
+    let values = [];
+    let queryIdx = 1;
+
+    if (frontUrl !== null) {
+        setClauses.push(`cccd_front_url = $${queryIdx}`);
+        values.push(frontUrl);
+        queryIdx++;
+    }
+
+    if (backUrl !== null) {
+        setClauses.push(`cccd_back_url = $${queryIdx}`);
+        values.push(backUrl);
+        queryIdx++;
+    }
+
+    values.push(customerId);
+
+    const query = `
+        UPDATE customers
+        SET ${setClauses.join(', ')}
+        WHERE customer_id = $${queryIdx}
+        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, cccd_front_url, cccd_back_url, updated_at
+    `;
+    
+    const result = await db.query(query, values);
     return result.rows[0];
 };

@@ -28,9 +28,12 @@ import billPaymentsRoutes from './src/modules/business-services/account-activity
 import customerAuthRouter from './src/modules/customer-services/auth/auth.route.js'; // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu)
 import discoverRoomRouter from './src/modules/customer-services/discover/rooms/room.route.js'; // Router discover phòng cho khách hàng
 import customerProfileRouter from './src/modules/customer-services/profile/profile.route.js'; // Router hồ sơ cá nhân của khách hàng
+import discoverBookingRouter from './src/modules/customer-services/discover/booking/booking.route.js'; // Router đặt phòng cho khách hàng
+import payosWebhookRouter from './src/modules/payment-services/payos/payos.route.js'; // Router webhook từ PayOS
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
+import { initPaymentCronJobs } from './src/modules/payment-services/cron/payment.cron.js';
 
 const app = express();
 app.use(morgan('dev'));
@@ -70,7 +73,9 @@ app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đ�
 // Router dành cho khách hàng (customer-services)
 app.use('/api/customer-auth', customerAuthRouter); // Router xác thực khách hàng (đăng ký, đăng nhập, quên mật khẩu, đặt lại mật khẩu)
 app.use('/api/discover/rooms', discoverRoomRouter); // Router discover phòng cho khách hàng
+app.use('/api/discover/booking', discoverBookingRouter); // Router đặt phòng cho khách hàng
 app.use('/api/customer', customerProfileRouter); // Router hồ sơ cá nhân của khách hàng (api/customer/profile, api/customer/avatar)
+app.use('/api/payment/payos', payosWebhookRouter); // Router nhận Webhook PayOS
 
 // ==========================================
 // TRANG CHỦ API — Hiện khi user vào ngrok URL
@@ -153,5 +158,6 @@ app.use((err, req, res, next) => {
 });
 
 initCronJobs();
+initPaymentCronJobs();
 
 export default app;

@@ -4,7 +4,8 @@ import {
     fetchCustomerProfileById,
     checkProfileDuplicate,
     updateCustomerProfileById,
-    updateCustomerAvatarById
+    updateCustomerAvatarById,
+    updateCustomerCCCDById
 } from './profile.model.js';
 import { hashPassword } from '../../../shared/utils/hash.util.js';
 
@@ -54,4 +55,19 @@ export const uploadAvatarLogic = async (customerId, file) => {
 
     const avatarUrl = `/uploads/customer-avatar/${file.filename}`;
     return await updateCustomerAvatarById(customerId, avatarUrl);
+};
+
+export const updateCCCDLogic = async (customerId, frontUrl, backUrl) => {
+    const currentCustomer = await fetchCustomerProfileById(customerId);
+    if (!currentCustomer) throw new Error('Không tìm thấy thông tin tài khoản.');
+
+    // Xóa file cũ nếu có
+    if (frontUrl && currentCustomer.cccd_front_url) {
+        deleteOldAvatar(currentCustomer.cccd_front_url);
+    }
+    if (backUrl && currentCustomer.cccd_back_url) {
+        deleteOldAvatar(currentCustomer.cccd_back_url);
+    }
+
+    return await updateCustomerCCCDById(customerId, frontUrl, backUrl);
 };
