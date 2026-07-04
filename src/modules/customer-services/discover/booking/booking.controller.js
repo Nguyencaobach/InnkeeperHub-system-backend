@@ -1,6 +1,18 @@
 import { createBookingAndPayment, getRoomAvailabilityService } from './booking.service.js';
 import { getBookingPaymentStatus, cancelBookingTransaction } from './booking.model.js';
 import { sendSuccess, sendError } from '../../../../shared/utils/response.util.js';
+import { verifyCCCDImage } from '../../../../shared/services/aiverify.service.js';
+import fs from 'fs';
+import path from 'path';
+
+// Hàm phụ: Xóa file tạm khi ảnh không hợp lệ
+const _deleteUploadedFile = (filePath) => {
+    try {
+        if (filePath && fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+    } catch (_) { /* ignore */ }
+};
 
 export const createBooking = async (req, res) => {
     try {
@@ -62,6 +74,8 @@ export const getRoomAvailability = async (req, res) => {
 export const uploadCCCDForBooking = async (req, res) => {
     try {
         const files = req.files;
+        // Lấy tên user để Python đối chiếu với tên trên CCCD
+        const userName = req.user?.full_name || req.user?.name || '';
 
         if (!files || (!files['cccd_front'] && !files['cccd_back'])) {
             return sendError(res, 'Vui lòng chọn ảnh mặt trước hoặc mặt sau CCCD.', 400);
@@ -70,12 +84,38 @@ export const uploadCCCDForBooking = async (req, res) => {
         let frontUrl = null;
         let backUrl = null;
 
+        // ─── XÁC THỰC ẢNH MẶT TRƯỚC VỚI AI SERVER ────────────────────
         if (files['cccd_front'] && files['cccd_front'].length > 0) {
-            frontUrl = `/uploads/cccd_for_reserved/${files['cccd_front'][0].filename}`;
+            const frontFile = files['cccd_front'][0];
+            const frontPath = path.join(process.cwd(), 'public', 'uploads', 'cccd_for_reserved', frontFile.filename);
+
+            const frontVerify = await verifyCCCDImage(frontPath, 'front', userName);
+            if (!frontVerify.valid) {
+                _deleteUploadedFile(frontPath);
+                if (files['cccd_back'] && files['cccd_back'].length > 0) {
+                    _deleteUploadedFile(path.join(process.cwd(), 'public', 'uploads', 'cccd_for_reserved', files['cccd_back'][0].filename));
+                }
+                return sendError(res, frontVerify.message, 400);
+            }
+
+            frontUrl = `/uploads/cccd_for_reserved/${frontFile.filename}`;
         }
-        
+
+        // ─── XÁC THỰC ẢNH MẶT SAU VỚI ZALO AI ─────────────────────
         if (files['cccd_back'] && files['cccd_back'].length > 0) {
-            backUrl = `/uploads/cccd_for_reserved/${files['cccd_back'][0].filename}`;
+            const backFile = files['cccd_back'][0];
+            const backPath = path.join(process.cwd(), 'public', 'uploads', 'cccd_for_reserved', backFile.filename);
+
+            const backVerify = await verifyCCCDImage(backPath, 'back');
+            if (!backVerify.valid) {
+                _deleteUploadedFile(backPath);
+                if (frontUrl) {
+                    _deleteUploadedFile(path.join(process.cwd(), 'public', frontUrl));
+                }
+                return sendError(res, backVerify.message, 400);
+            }
+
+            backUrl = `/uploads/cccd_for_reserved/${backFile.filename}`;
         }
 
         return sendSuccess(res, { cccd_front_url: frontUrl, cccd_back_url: backUrl }, 'Upload thành công', 200);

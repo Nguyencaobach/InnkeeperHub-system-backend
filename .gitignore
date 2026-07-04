@@ -68,3 +68,12 @@ public/
 # Bỏ qua file chạy ngrok
 ngrok.exe
 ngrok   
+
+# ====================================================================
+# 8. AI SERVER — Bỏ qua file nặng (model cache, Python cache)
+# ====================================================================
+# Giữ lại: ai_server.py, Dockerfile, requirements.txt, README.md, start.ps1
+ai-server/__pycache__/
+ai-server/*.pyc
+ai-server/.cache/
+ai-server/models/

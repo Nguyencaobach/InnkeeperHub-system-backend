@@ -1,0 +1,6 @@
+{
+  "watch": ["src", "server.js"],
+  "ignore": ["ai-server/", "public/", "node_modules/"],
+  "ext": "js,json",
+  "exec": "node server.js"
+}
