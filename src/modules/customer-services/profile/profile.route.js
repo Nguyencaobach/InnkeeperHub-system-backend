@@ -3,8 +3,10 @@ import {
     getMyProfile,
     updateMyProfile,
     uploadCustomerAvatar,
-    updateCustomerCCCD
+    updateCustomerCCCD,
+    getMyPaymentHistory
 } from './profile.controller.js';
+
 import { updateProfileSchema } from './profile.validation.js';
 import { validateData } from '../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
@@ -29,5 +31,8 @@ router.post('/cccd', uploadCCCDImage.fields([
     { name: 'cccd_front', maxCount: 1 },
     { name: 'cccd_back', maxCount: 1 }
 ]), updateCustomerCCCD);
+
+// [GET] Lịch sử thanh toán
+router.get('/payment-history', getMyPaymentHistory);
 
 export default router;

@@ -2,8 +2,10 @@ import {
     getProfileLogic,
     updateProfileLogic,
     uploadAvatarLogic,
-    updateCCCDLogic
+    updateCCCDLogic,
+    getPaymentHistoryLogic
 } from './profile.service.js';
+
 import { sendSuccess, sendError, STATUS_CODES } from '../../../shared/utils/response.util.js';
 import { invalidateCache } from '../../../shared/middlewares/cache.middleware.js';
 import { verifyCCCDImage } from '../../../shared/services/aiverify.service.js';
@@ -121,3 +123,12 @@ export const updateCustomerCCCD = async (req, res) => {
     }
 };
 
+export const getMyPaymentHistory = async (req, res) => {
+    try {
+        const customerId = req.user.customer_id;
+        const history = await getPaymentHistoryLogic(customerId);
+        return sendSuccess(res, history, 'Lấy lịch sử thanh toán thành công', STATUS_CODES.OK);
+    } catch (error) {
+        return sendError(res, error.message, STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
+};

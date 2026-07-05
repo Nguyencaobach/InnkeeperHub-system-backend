@@ -5,8 +5,10 @@ import {
     checkProfileDuplicate,
     updateCustomerProfileById,
     updateCustomerAvatarById,
-    updateCustomerCCCDById
+    updateCustomerCCCDById,
+    fetchPaymentHistory
 } from './profile.model.js';
+
 import { hashPassword } from '../../../shared/utils/hash.util.js';
 
 // Hàm phụ trợ: Xóa ảnh vật lý trên server
@@ -70,4 +72,8 @@ export const updateCCCDLogic = async (customerId, frontUrl, backUrl) => {
     }
 
     return await updateCustomerCCCDById(customerId, frontUrl, backUrl);
+};
+
+export const getPaymentHistoryLogic = async (customerId) => {
+    return await fetchPaymentHistory(customerId);
 };
