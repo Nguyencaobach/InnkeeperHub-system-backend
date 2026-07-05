@@ -66,6 +66,65 @@ class CustomerRoomModel {
         const result = await pool.query(query, [roomTypeId, customerId, rating]);
         return result.rows[0];
     }
+
+    /**
+     * Lưu phòng (Nếu đã lưu rồi thì báo đã tồn tại)
+     */
+    async saveRoom(customerId, roomTypeId) {
+        const checkQuery = `SELECT id FROM customer_saved_rooms WHERE customer_id = $1 AND room_type_id = $2`;
+        const checkResult = await pool.query(checkQuery, [customerId, roomTypeId]);
+        
+        if (checkResult.rows.length > 0) {
+            // Đã lưu
+            return { is_saved: true, already_exists: true };
+        } else {
+            // Chưa lưu -> Thêm mới
+            await pool.query(
+                `INSERT INTO customer_saved_rooms (customer_id, room_type_id) VALUES ($1, $2)`, 
+                [customerId, roomTypeId]
+            );
+            return { is_saved: true, already_exists: false };
+        }
+    }
+
+    /**
+     * Xóa phòng đã lưu
+     */
+    async removeSavedRoom(customerId, roomTypeId) {
+        const query = `DELETE FROM customer_saved_rooms WHERE customer_id = $1 AND room_type_id = $2`;
+        const result = await pool.query(query, [customerId, roomTypeId]);
+        return result.rowCount > 0; // Trả về true nếu xóa thành công
+    }
+
+    /**
+     * Lấy danh sách phòng đã lưu của khách hàng
+     */
+    async fetchSavedRooms(customerId) {
+        const query = `
+            SELECT 
+                rt.id,
+                rt.name,
+                rt.hourly_price,
+                rt.daily_price,
+                rt.floor,
+                rt.capacity,
+                rt.bed_type,
+                rt.room_size,
+                rt.view_type,
+                rt.amenities,
+                rt.room_img_url,
+                COALESCE(ROUND(AVG(rtr.rating), 1), 0) AS average_rating,
+                COUNT(rtr.id) AS total_reviews
+            FROM customer_saved_rooms csr
+            INNER JOIN room_types rt ON csr.room_type_id = rt.id
+            LEFT JOIN room_type_ratings rtr ON rt.id = rtr.room_type_id
+            WHERE csr.customer_id = $1
+            GROUP BY rt.id, csr.created_at
+            ORDER BY csr.created_at DESC;
+        `;
+        const result = await pool.query(query, [customerId]);
+        return result.rows;
+    }
 }
 
 export default new CustomerRoomModel();
