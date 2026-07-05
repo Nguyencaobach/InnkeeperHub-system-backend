@@ -4,4 +4,5 @@ python-multipart==0.0.9
 opencv-python-headless==4.9.0.80
 numpy==1.26.4
 mediapipe==0.10.14
-easyocr==1.7.1
+paddlepaddle==2.6.2
+paddleocr==2.7.3
