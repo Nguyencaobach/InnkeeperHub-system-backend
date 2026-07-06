@@ -78,10 +78,11 @@ export const invalidateCache = async (...patterns) => {
 export const withUserCache = (keyPrefix, ttlSeconds) => {
     return async (req, res, next) => {
         try {
-            const customerId = req.user?.customer_id;
-            if (!customerId) return next(); // Không có user → bỏ qua cache
+            // Hỗ trợ cả customer_id (khách hàng) và user_id/id (nhân viên/admin)
+            const userId = req.user?.customer_id || req.user?.user_id || req.user?.id;
+            if (!userId) return next(); // Không có user → bỏ qua cache
 
-            const key = `${keyPrefix}:${customerId}:${req.originalUrl}`;
+            const key = `${keyPrefix}:${userId}:${req.originalUrl}`;
 
             // 1. Thử lấy từ cache
             const cached = await cacheGet(key);
@@ -117,6 +118,6 @@ export const withUserCache = (keyPrefix, ttlSeconds) => {
 // Dùng sau khi dữ liệu của user thay đổi (tạo/hủy booking...)
 // VD: await invalidateUserCache('customer:activity:bookings', customerId);
 // ============================================================
-export const invalidateUserCache = async (keyPrefix, customerId) => {
-    await cacheDelPattern(`${keyPrefix}:${customerId}`);
+export const invalidateUserCache = async (keyPrefix, userId) => {
+    await cacheDelPattern(`${keyPrefix}:${userId}`);
 };

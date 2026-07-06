@@ -11,7 +11,7 @@ import { validateData } from '../../../shared/middlewares/validation.middleware.
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
 import { requireRole } from '../../../shared/middlewares/role.middleware.js';
 import { uploadAvatarImage } from '../../../shared/middlewares/upload.middleware.js';
-import { withCache } from '../../../shared/middlewares/cache.middleware.js';
+import { withCache, withUserCache } from '../../../shared/middlewares/cache.middleware.js';
 import { TTL } from '../../../shared/services/cache.service.js';
 
 const router = express.Router();
@@ -24,7 +24,7 @@ router.use(verifyToken);
 // =============================================
 
 // [GET] Profile cá nhân — Cache 15 phút
-router.get('/me', withCache('profile:me', TTL.LONG), getMyProfile);
+router.get('/me', withUserCache('profile:me', TTL.LONG), getMyProfile);
 
 // [PUT] Cập nhật profile → Xóa cache
 router.put('/me', validateData(updateProfileSchema), updateMyProfile);
