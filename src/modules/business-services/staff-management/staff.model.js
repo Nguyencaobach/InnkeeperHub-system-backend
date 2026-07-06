@@ -143,3 +143,25 @@ export const softDeleteStaffById = async (id) => {
     const result = await db.query(query, [id]);
     return result.rows[0];
 };
+
+// 7. Xóa cứng (Hard Delete) - Xóa vĩnh viễn
+export const hardDeleteStaffById = async (id) => {
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Cố gắng xóa ở bảng phụ trước (nếu không có cascade)
+        await client.query(`DELETE FROM user_bank_details WHERE user_id = $1`, [id]);
+        
+        // Xóa ở bảng chính
+        const result = await client.query(`DELETE FROM business_users WHERE user_id = $1 RETURNING *`, [id]);
+        
+        await client.query('COMMIT');
+        return result.rows[0];
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+};

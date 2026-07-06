@@ -1,6 +1,6 @@
 import { 
     checkDuplicate, fetchAllStaff, fetchStaffById, 
-    insertStaff, updateStaffById, softDeleteStaffById 
+    insertStaff, updateStaffById, softDeleteStaffById, hardDeleteStaffById 
 } from './staff.model.js';
 import { hashPassword } from '../../../shared/utils/hash.util.js';
 
@@ -85,4 +85,11 @@ export const deleteLogic = async (id) => {
 
     // Thực hiện "Xóa mềm" (Chỉ khóa tài khoản, không xóa mất dữ liệu)
     return await softDeleteStaffById(id);
+};
+
+export const hardDeleteLogic = async (id) => {
+    const currentStaff = await fetchStaffById(id);
+    if (!currentStaff) throw new Error("Không tìm thấy thông tin nhân viên này.");
+
+    return await hardDeleteStaffById(id);
 };

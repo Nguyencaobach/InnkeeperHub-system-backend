@@ -2,7 +2,9 @@ import {
     createBookingTransaction,
     getActiveBookingByRoomId,
     updateBookingById,
-    checkoutBookingById
+    checkoutBookingById,
+    checkReservedConflict,
+    getBookingById
 } from './booking.model.js';
 
 // ── Tạo phiên thuê ────────────────────────────────────────────────────────────
@@ -24,9 +26,23 @@ export const createBookingLogic = async (data, files, user) => {
         }
     }
 
-    // 3. Đóng gói dữ liệu gửi xuống Model
-    const actual_checkin = new Date(); // Bấm tạo phiên thuê là check-in thực tế luôn
-    
+    // 3. Kiểm tra xung đột lịch RESERVED (mobile user đã đặt trước)
+    // Dùng expected_checkin từ admin nếu có, nếu không thì lấy thời điểm hiện tại
+    const actual_checkin = data.expected_checkin ? new Date(data.expected_checkin) : new Date(); 
+    const conflictBookings = await checkReservedConflict(
+        data.room_detail_id,
+        actual_checkin,
+        data.expected_checkout || null
+    );
+
+    if (conflictBookings && conflictBookings.length > 0) {
+        const error = new Error('CONFLICT_BOOKING');
+        error.status = 409;
+        error.conflicts = conflictBookings;
+        throw error;
+    }
+
+    // 4. Đóng gói dữ liệu gửi xuống Model
     const bookingData = {
         ...data,
         booking_code,
@@ -48,6 +64,28 @@ export const getActiveBookingByRoomLogic = async (roomDetailId) => {
 
 // ── Cập nhật thông tin phiên thuê ────────────────────────────────────────────
 export const updateBookingLogic = async (id, data) => {
+    // 1. Fetch current booking to get roomDetailId and current times
+    const existing = await getBookingById(id);
+    if (!existing) throw new Error('Không tìm thấy phiên thuê.');
+
+    // 2. Determine the time range for conflict checking
+    const proposedCheckin = data.expected_checkin || existing.expected_checkin;
+    const proposedCheckout = data.expected_checkout !== undefined ? data.expected_checkout : existing.expected_checkout;
+
+    // 3. Check for conflicts with reserved bookings
+    const conflictBookings = await checkReservedConflict(
+        existing.room_detail_id,
+        proposedCheckin,
+        proposedCheckout
+    );
+
+    if (conflictBookings && conflictBookings.length > 0) {
+        const error = new Error('CONFLICT_BOOKING');
+        error.status = 409;
+        error.conflicts = conflictBookings;
+        throw error;
+    }
+
     return await updateBookingById(id, data);
 };
 

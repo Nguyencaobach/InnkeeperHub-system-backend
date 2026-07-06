@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { autoLockExpiredBatches } from '../../modules/business-services/warehouse-management/product-batches/product-batch.model.js';
 import { autoLockExpiredDiscounts } from '../../modules/business-services/service-management/discount/discount.model.js';
+import { autoMarkOverdueReservations } from '../../modules/business-services/rooms-management/reserve-booking/reserve-booking-validity.model.js';
 
 export const initCronJobs = () => {
 
@@ -52,6 +53,19 @@ export const initCronJobs = () => {
             console.error('Lỗi cron kho hàng:', error.message);
         }
     }, { timezone: 'Asia/Ho_Chi_Minh' }); // Quan trọng: Chạy đúng 00:00 giờ Việt Nam
+
+    // 3. Đồng hồ cho LỊCH ĐẶT TRƯỚC: Chạy mỗi 20 phút
+    // Đánh dấu OVERDUE các booking RESERVED đã quá giờ nhận phòng mà khách chưa đến
+    cron.schedule('*/20 * * * *', async () => {
+        try {
+            const overdueCount = await autoMarkOverdueReservations();
+            if (overdueCount > 0) {
+                console.log(`📅 [CRON - 1 Min] Đã đánh dấu ${overdueCount} lịch đặt trước quá hạn nhận phòng (PENDING → OVERDUE).`);
+            }
+        } catch (error) {
+            console.error('Lỗi cron lịch đặt trước:', error.message);
+        }
+    });
 
     console.log('⏱️  [CRON] Hệ thống bảo vệ dữ liệu tự động đã kích hoạt!');
 };

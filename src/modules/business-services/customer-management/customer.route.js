@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCustomer, getAllCustomers, updateCustomer, deleteCustomer } from './customer.controller.js';
+import { createCustomer, getAllCustomers, updateCustomer, deleteCustomer, hardDeleteCustomer } from './customer.controller.js';
 import { createCustomerSchema, updateCustomerSchema } from './customer.validation.js';
 import { validateData } from '../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
@@ -20,7 +20,10 @@ router.post('/', validateData(createCustomerSchema), createCustomer);
 // [PUT] Cập nhật
 router.put('/:id', validateData(updateCustomerSchema), updateCustomer);
 
-// [DELETE] Xóa
+// [DELETE] Xóa mềm (Khóa tài khoản)
 router.delete('/:id', deleteCustomer);
+
+// [DELETE] Xóa cứng (Xóa vĩnh viễn)
+router.delete('/hard/:id', hardDeleteCustomer);
 
 export default router;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { createStaff, getAllStaff, updateStaff, deleteStaff } from './staff.controller.js';
+import { createStaff, getAllStaff, updateStaff, deleteStaff, hardDeleteStaff } from './staff.controller.js';
 import { createStaffSchema, updateStaffSchema } from './staff.validation.js';
 import { validateData } from '../../../shared/middlewares/validation.middleware.js';
 import { verifyToken } from '../../../shared/middlewares/auth.middleware.js';
@@ -21,7 +21,10 @@ router.post('/', validateData(createStaffSchema), createStaff);
 // [PUT] Cập nhật nhân viên: Đi qua Joi (schema update) -> Controller
 router.put('/:id', validateData(updateStaffSchema), updateStaff);
 
-// [DELETE] Khóa tài khoản nhân viên
+// [DELETE] Khóa tài khoản nhân viên (Xóa mềm)
 router.delete('/:id', deleteStaff);
+
+// [DELETE] Xóa vĩnh viễn nhân viên (Xóa cứng)
+router.delete('/hard/:id', hardDeleteStaff);
 
 export default router;

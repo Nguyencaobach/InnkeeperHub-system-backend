@@ -84,3 +84,10 @@ export const softDeleteCustomerById = async (id) => {
     const result = await db.query(query, [id]);
     return result.rows[0];
 };
+
+// 7. Xóa cứng (Xóa vĩnh viễn)
+export const hardDeleteCustomerById = async (id) => {
+    const query = `DELETE FROM customers WHERE customer_id = $1 RETURNING *`;
+    const result = await db.query(query, [id]);
+    return result.rows[0];
+};

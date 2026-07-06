@@ -20,6 +20,13 @@ export const createBooking = async (req, res) => {
         await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
         return sendSuccess(res, result, "Tạo phiên thuê thành công!", STATUS_CODES.CREATED);
     } catch (error) {
+        if (error.message === 'CONFLICT_BOOKING') {
+            return res.status(409).json({
+                success: false,
+                message: 'Phòng đã có lịch đặt trước bị trùng thời gian. Vui lòng kiểm tra lại.',
+                conflicts: error.conflicts
+            });
+        }
         console.error("Lỗi tạo Booking:", error);
         return sendError(res, error.message || "Không thể tạo phiên thuê", STATUS_CODES.INTERNAL_ERROR);
     }
@@ -46,6 +53,13 @@ export const updateBooking = async (req, res) => {
         await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
         return sendSuccess(res, result, "Cập nhật phiên thuê thành công!", STATUS_CODES.OK);
     } catch (error) {
+        if (error.message === 'CONFLICT_BOOKING') {
+            return res.status(409).json({
+                success: false,
+                message: 'Thời gian cập nhật trùng với lịch đặt trước. Vui lòng kiểm tra lại.',
+                conflicts: error.conflicts
+            });
+        }
         console.error("Lỗi cập nhật Booking:", error);
         return sendError(res, error.message || "Không thể cập nhật phiên thuê", STATUS_CODES.BAD_REQUEST);
     }

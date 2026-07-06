@@ -11,9 +11,12 @@ import { cacheGet, cacheSet, cacheDelPattern } from '../services/cache.service.j
 //   2. Nếu có (HIT) → trả về ngay, không đụng vào DB
 //   3. Nếu không có (MISS) → gọi Controller, intercept response, lưu vào Redis
 // ============================================================
-export const withCache = (key, ttlSeconds) => {
+export const withCache = (keyPrefix, ttlSeconds) => {
     return async (req, res, next) => {
         try {
+            // Thêm originalUrl để tạo key độc nhất cho từng URL (bao gồm cả query params, path params)
+            const key = `${keyPrefix}:${req.originalUrl}`;
+            
             // 1. Thử lấy từ cache
             const cached = await cacheGet(key);
             if (cached !== null) {
@@ -67,8 +70,8 @@ export const invalidateCache = async (...patterns) => {
 // Dùng cho các endpoint yêu cầu đăng nhập, dữ liệu khác nhau
 // theo từng người dùng (VD: lịch sử đặt phòng, phòng đã lưu...)
 //
-// Cache key sẽ có dạng: `prefix:customer_id`
-// VD: 'customer:activity:bookings:abc-uuid-123'
+// Cache key sẽ có dạng: `prefix:customer_id:url`
+// VD: 'customer:activity:bookings:abc-uuid-123:/api/customers/me/bookings'
 //
 // LƯU Ý: Middleware này phải đặt SAU verifyToken vì cần req.user
 // ============================================================
@@ -78,7 +81,7 @@ export const withUserCache = (keyPrefix, ttlSeconds) => {
             const customerId = req.user?.customer_id;
             if (!customerId) return next(); // Không có user → bỏ qua cache
 
-            const key = `${keyPrefix}:${customerId}`;
+            const key = `${keyPrefix}:${customerId}:${req.originalUrl}`;
 
             // 1. Thử lấy từ cache
             const cached = await cacheGet(key);

@@ -67,6 +67,12 @@ export const getActiveBookingByRoomId = async (roomDetailId) => {
     return result.rows[0] || null;
 };
 
+// ── Lấy phiên thuê theo ID ───────────────────────────────────────────────────
+export const getBookingById = async (id) => {
+    const result = await pool.query('SELECT * FROM bookings WHERE booking_id = $1', [id]);
+    return result.rows[0] || null;
+};
+
 // ── Cập nhật thông tin phiên thuê ────────────────────────────────────────────
 export const updateBookingById = async (id, data) => {
     const {
@@ -215,4 +221,38 @@ export const checkoutBookingById = async (id, paymentData = {}) => {
     } finally {
         client.release();
     }
+};
+
+// ── Kiểm tra xung đột lịch RESERVED trước khi tạo phiên thuê (admin) ─────────
+// Logic tham khảo từ customer-services/discover/booking (getRoomAvailabilityModel)
+// Overlap condition: existing.checkin < proposed.checkout AND existing.checkout > proposed.checkin
+export const checkReservedConflict = async (roomDetailId, proposedCheckin, proposedCheckout) => {
+    // Nếu admin không cung cấp checkout → xem như vô thời hạn (9999) 
+    // để bất kỳ lịch đặt trước nào trong tương lai cũng sẽ báo trùng lịch
+    const effectiveCheckout = proposedCheckout
+        ? new Date(proposedCheckout)
+        : new Date('9999-12-31T23:59:59.999Z');
+
+    const query = `
+        SELECT 
+            booking_id, 
+            booking_code, 
+            guest_name,
+            expected_checkin, 
+            expected_checkout
+        FROM bookings
+        WHERE room_detail_id = $1
+          AND booking_status = 'RESERVED'
+          AND expected_checkin <= $3
+          AND expected_checkout >= $2
+        ORDER BY expected_checkin ASC;
+    `;
+
+    const result = await pool.query(query, [
+        roomDetailId,
+        new Date(proposedCheckin),
+        effectiveCheckout
+    ]);
+
+    return result.rows; // Trả về tất cả các lịch trùng
 };

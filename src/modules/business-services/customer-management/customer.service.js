@@ -1,6 +1,7 @@
 import { 
     checkDuplicate, fetchAllCustomers, fetchCustomerById, 
-    insertCustomer, updateCustomerById, softDeleteCustomerById 
+    insertCustomer, updateCustomerById, softDeleteCustomerById,
+    hardDeleteCustomerById
 } from './customer.model.js';
 import { hashPassword } from '../../../shared/utils/hash.util.js';
 
@@ -52,4 +53,11 @@ export const deleteLogic = async (id) => {
     if (!currentCustomer) throw new Error("Không tìm thấy thông tin khách hàng này.");
 
     return await softDeleteCustomerById(id);
+};
+
+export const hardDeleteLogic = async (id) => {
+    const currentCustomer = await fetchCustomerById(id);
+    if (!currentCustomer) throw new Error("Không tìm thấy thông tin khách hàng này.");
+
+    return await hardDeleteCustomerById(id);
 };
