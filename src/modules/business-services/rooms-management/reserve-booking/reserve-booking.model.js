@@ -58,8 +58,8 @@ export const updateReservedBookingTime = async (bookingId, expectedCheckin, expe
             WHERE room_detail_id = $1
               AND booking_status = 'RESERVED'
               AND booking_id != $2
-              AND expected_checkin <= $4
-              AND expected_checkout >= $3
+              AND expected_checkin < $4
+              AND expected_checkout > $3
             LIMIT 1;
         `;
         const conflict = await client.query(conflictQuery, [room_detail_id, bookingId, checkin, checkout]);
@@ -117,13 +117,16 @@ export const deleteReservedBooking = async (bookingId) => {
         // Xóa booking
         await client.query(`DELETE FROM bookings WHERE booking_id = $1`, [bookingId]);
 
-        // Nếu phòng không còn RESERVED nào khác → trả về AVAILABLE
-        const remaining = await client.query(
-            `SELECT COUNT(*) FROM bookings WHERE room_detail_id = $1 AND booking_status = 'RESERVED'`,
-            [room_detail_id]
-        );
-        if (parseInt(remaining.rows[0].count) === 0) {
-            await client.query(`UPDATE room_details SET status = 'AVAILABLE' WHERE id = $1`, [room_detail_id]);
+        // Chỉ đổi status của phòng nếu nó đang hiển thị là RESERVED (Không đụng vào nếu đang OCCUPIED, v.v.)
+        const roomCheck = await client.query(`SELECT status FROM room_details WHERE id = $1`, [room_detail_id]);
+        if (roomCheck.rows[0]?.status === 'RESERVED') {
+            const remaining = await client.query(
+                `SELECT COUNT(*) FROM bookings WHERE room_detail_id = $1 AND booking_status = 'RESERVED'`,
+                [room_detail_id]
+            );
+            if (parseInt(remaining.rows[0].count) === 0) {
+                await client.query(`UPDATE room_details SET status = 'AVAILABLE' WHERE id = $1`, [room_detail_id]);
+            }
         }
 
         await client.query('COMMIT');

@@ -44,7 +44,7 @@ export const createCustomerBookingTransaction = async (bookingData) => {
             const updateRoomQuery = `
                 UPDATE room_details 
                 SET status = 'RESERVED' 
-                WHERE id = $1 
+                WHERE id = $1 AND status = 'AVAILABLE'
                 RETURNING room_number;
             `;
             await client.query(updateRoomQuery, [bookingData.room_detail_id]);
@@ -113,15 +113,17 @@ export const cancelBookingTransaction = async (bookingId, customerId) => {
             throw new Error('Không thể hủy đơn đặt phòng đã thanh toán.');
         }
         
-        // 2. Cập nhật trạng thái phòng về AVAILABLE
-        if (booking.room_detail_id) {
-            const updateRoomQuery = `
-                UPDATE room_details 
-                SET status = 'AVAILABLE' 
-                WHERE id = $1
-            `;
-            await client.query(updateRoomQuery, [booking.room_detail_id]);
-        }
+            // Chỉ đổi về AVAILABLE nếu phòng đang ở trạng thái RESERVED và không còn lịch nào khác
+            const roomCheck = await client.query(`SELECT status FROM room_details WHERE id = $1`, [booking.room_detail_id]);
+            if (roomCheck.rows[0]?.status === 'RESERVED') {
+                const remaining = await client.query(
+                    `SELECT COUNT(*) FROM bookings WHERE room_detail_id = $1 AND booking_status = 'RESERVED' AND booking_id != $2`,
+                    [booking.room_detail_id, bookingId]
+                );
+                if (parseInt(remaining.rows[0].count) === 0) {
+                    await client.query(`UPDATE room_details SET status = 'AVAILABLE' WHERE id = $1`, [booking.room_detail_id]);
+                }
+            }
         
         // 3. Xóa đơn đặt phòng
         const deleteQuery = `DELETE FROM bookings WHERE booking_id = $1`;

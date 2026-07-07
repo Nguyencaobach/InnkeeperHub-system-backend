@@ -28,12 +28,11 @@ export const updateReservedBookingTime = async (req, res) => {
         if (!expected_checkin) {
             return sendError(res, 'Vui lòng nhập giờ nhận phòng dự kiến.', STATUS_CODES.BAD_REQUEST);
         }
-        if (new Date(expected_checkin) < new Date(new Date().toDateString())) {
-            return sendError(res, 'Không thể đặt giờ nhận phòng vào ngày quá khứ.', STATUS_CODES.BAD_REQUEST);
-        }
+        // Đã xóa kiểm tra ngày quá khứ khi cập nhật để Admin có thể sửa lịch tự do
+
 
         const result = await updateReservedBookingTimeLogic(bookingId, expected_checkin, expected_checkout || null);
-        await invalidateCache('bookings:*', 'customer:*bookings:*');
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'reserve-bookings:by-room:*');
         return sendSuccess(res, result, 'Cập nhật lịch đặt trước thành công!', STATUS_CODES.OK);
     } catch (error) {
         console.error('Lỗi cập nhật lịch đặt trước:', error);
@@ -51,7 +50,7 @@ export const deleteReservedBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
         await deleteReservedBookingLogic(bookingId);
-        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*', 'reserve-bookings:by-room:*');
         return sendSuccess(res, null, 'Đã xóa lịch đặt trước thành công!', STATUS_CODES.OK);
     } catch (error) {
         console.error('Lỗi xóa lịch đặt trước:', error);
@@ -64,7 +63,7 @@ export const convertReservedToRented = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const result = await convertReservedToRentedLogic(bookingId);
-        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*');
+        await invalidateCache('bookings:*', 'customer:*bookings:*', 'room-details:*', 'customer:*room-details:*', 'reserve-bookings:by-room:*');
         return sendSuccess(res, result, 'Nhận phòng thành công! Đã chuyển sang phiên thuê.', STATUS_CODES.OK);
     } catch (error) {
         console.error('Lỗi chuyển phiên thuê:', error);

@@ -31,14 +31,21 @@ export const cleanupExpiredUnpaidBookings = async () => {
         const roomDetailIds = expiredBookings.map(b => b.room_detail_id).filter(id => id !== null);
         const bookingIds = expiredBookings.map(b => b.booking_id);
 
-        // 2. Cập nhật phòng về trạng thái AVAILABLE
+        // 2. Cập nhật phòng về trạng thái AVAILABLE (chỉ áp dụng nếu phòng đang hiển thị RESERVED và không còn lịch nào khác)
         if (roomDetailIds.length > 0) {
             const updateRoomsQuery = `
                 UPDATE room_details 
                 SET status = 'AVAILABLE' 
                 WHERE id = ANY($1)
+                  AND status = 'RESERVED'
+                  AND id NOT IN (
+                      SELECT room_detail_id FROM bookings
+                      WHERE booking_status = 'RESERVED'
+                        AND booking_id != ALL($2)
+                        AND room_detail_id IS NOT NULL
+                  )
             `;
-            await client.query(updateRoomsQuery, [roomDetailIds]);
+            await client.query(updateRoomsQuery, [roomDetailIds, bookingIds]);
         }
 
         // 3. Xóa các booking ảo

@@ -12,6 +12,11 @@ const pool = new Pool({
     }
 });
 
+// Lắng nghe lỗi trên các idle client để tránh sập server (Đặc biệt quan trọng với Azure/AWS vì họ hay tự động ngắt kết nối tĩnh)
+pool.on('error', (err, client) => {
+    console.error('❌ Lỗi kết nối ngầm (Idle Client) tới PostgreSQL:', err.message);
+});
+
 // Hàm kiểm tra kết nối
 export const checkDatabaseConnection = async () => {
     try {

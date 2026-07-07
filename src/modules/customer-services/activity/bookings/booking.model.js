@@ -49,6 +49,7 @@ class CustomerBookingModel {
             ) pt ON b.booking_id = pt.booking_id
             WHERE b.customer_id = $1
               AND b.booking_status IN ('RESERVED', 'RENTED')
+              AND b.payment_status != 'UNPAID'
             ORDER BY COALESCE(pt.created_at, b.created_at) DESC;
         `;
         const result = await pool.query(query, [customerId]);
