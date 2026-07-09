@@ -6,7 +6,8 @@ export const fetchCustomerProfileById = async (customerId) => {
     const query = `
         SELECT 
             customer_id, username, full_name, email, 
-            phone_number, avatar_url, cccd_front_url, cccd_back_url, is_active, created_at, updated_at
+            phone_number, avatar_url, cccd_front_url, cccd_back_url, is_active, 
+            member_code, current_points, created_at, updated_at
         FROM customers
         WHERE customer_id = $1 AND is_active = TRUE
     `;

@@ -18,13 +18,14 @@ export const checkCodeExists = async (code, excludeId = null) => {
 export const insertDiscount = async (data) => {
     const query = `
         INSERT INTO discount_codes 
-        (code, description, discount_amount, min_order_value, usage_limit, start_date, end_date, is_active) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        (code, description, discount_amount, min_order_value, usage_limit, start_date, end_date, is_active, points_required) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
         RETURNING *;
     `;
     const values = [
         data.code, data.description, data.discount_amount, data.min_order_value, 
-        data.usage_limit, data.start_date, data.end_date, data.is_active
+        data.usage_limit, data.start_date, data.end_date, data.is_active,
+        data.points_required || 0
     ];
     const result = await db.query(query, values);
     return result.rows[0];
@@ -51,13 +52,14 @@ export const updateDiscountById = async (id, data) => {
         UPDATE discount_codes 
         SET code = $1, description = $2, discount_amount = $3, min_order_value = $4, 
             usage_limit = $5, start_date = $6, end_date = $7, is_active = $8, 
-            updated_at = CURRENT_TIMESTAMP
-        WHERE discount_id = $9 
+            points_required = $9, updated_at = CURRENT_TIMESTAMP
+        WHERE discount_id = $10 
         RETURNING *;
     `;
     const values = [
         data.code, data.description, data.discount_amount, data.min_order_value, 
-        data.usage_limit, data.start_date, data.end_date, data.is_active, id
+        data.usage_limit, data.start_date, data.end_date, data.is_active,
+        data.points_required || 0, id
     ];
     const result = await db.query(query, values);
     return result.rows[0];

@@ -45,5 +45,11 @@ export const discountSchema = Joi.object({
     }),
     
     // Trạng thái hoạt động
-    is_active: Joi.boolean().default(true)
+    is_active: Joi.boolean().default(true),
+
+    // Điểm cần để đổi voucher (Tích hợp module Voucher)
+    points_required: Joi.number().integer().min(0).default(0).messages({
+        'number.base': 'Điểm cần đổi phải là con số.',
+        'number.min': 'Điểm cần đổi không được là số âm.'
+    })
 });

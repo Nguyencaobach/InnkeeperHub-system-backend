@@ -7,7 +7,7 @@ export const findCustomerByUsername = async (username) => {
     // Chỉ lấy các trường cần thiết, bắt buộc kiểm tra is_active = TRUE
     const query = `
         SELECT customer_id, username, password, full_name, email, phone_number,
-               avatar_url, is_active
+               avatar_url, is_active, member_code, current_points
         FROM customers
         WHERE username = $1 AND is_active = TRUE
         LIMIT 1
@@ -34,12 +34,19 @@ export const checkCustomerExists = async (username, email, phone_number) => {
 // CREATE — Tạo tài khoản customer mới
 // ============================================================
 export const createCustomer = async ({ username, password, full_name, email, phone_number }) => {
+    // Auto-generate member_code: MBR-XXXXXX (6 ký tự random uppercase + số)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let memberCode = 'MBR-';
+    for (let i = 0; i < 6; i++) {
+        memberCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
     const query = `
-        INSERT INTO customers (username, password, full_name, email, phone_number)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, created_at
+        INSERT INTO customers (username, password, full_name, email, phone_number, member_code)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING customer_id, username, full_name, email, phone_number, avatar_url, member_code, created_at
     `;
-    const result = await db.query(query, [username, password, full_name, email, phone_number]);
+    const result = await db.query(query, [username, password, full_name, email, phone_number, memberCode]);
     return result.rows[0];
 };
 

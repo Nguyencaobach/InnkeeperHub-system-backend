@@ -33,6 +33,7 @@ import discoverBookingRouter from './src/modules/customer-services/discover/book
 import payosWebhookRouter from './src/modules/payment-services/payos/payos.route.js'; // Router webhook từ PayOS
 import activityBookingRouter from './src/modules/customer-services/activity/bookings/booking.route.js'; // Router lịch sử đặt phòng của khách hàng
 import serviceOrderRouter from './src/modules/customer-services/activity/service-orders/service-order.route.js'; // Router đơn đặt dịch vụ của khách hàng
+import voucherRouter from './src/modules/customer-services/voucher/voucher.route.js'; // Router voucher & tích điểm
 
 
 import { initCronJobs } from './src/shared/services/cron.service.js';
@@ -82,6 +83,7 @@ app.use('/api/customer', customerProfileRouter); // Router hồ sơ cá nhân c�
 app.use('/api/payment/payos', payosWebhookRouter); // Router nhận Webhook PayOS
 app.use('/api/activity/bookings', activityBookingRouter); // Router lịch sử đặt phòng của khách hàng
 app.use('/api/activity/service-orders', serviceOrderRouter); // Router đơn đặt dịch vụ của khách hàng
+app.use('/api/voucher', voucherRouter); // Router voucher & tích điểm
 
 // ==========================================
 // TRANG CHỦ API — Hiện khi user vào ngrok URL

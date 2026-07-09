@@ -153,14 +153,18 @@ export const checkoutBookingById = async (id, paymentData = {}) => {
                 actual_duration_minutes = $2,
                 payment_status          = 'PAID',
                 total_amount            = $3,
+                discount_amount         = $4,
+                discount_code           = $5,
                 updated_at              = NOW()
-            WHERE booking_id = $4
+            WHERE booking_id = $6
             RETURNING room_detail_id, booking_code;
         `;
         const resBooking = await client.query(updateBookingQuery, [
             actualCheckout,
             durationMinutes,
             paymentData.final_amount ?? 0,
+            paymentData.discount_amount ?? 0,
+            paymentData.discount_code ?? null,
             id
         ]);
         const { room_detail_id, booking_code } = resBooking.rows[0];
@@ -188,15 +192,15 @@ export const checkoutBookingById = async (id, paymentData = {}) => {
                 room_number, guest_name, guest_phone, guest_email,
                 cccd_front_url, cccd_back_url,
                 rent_type, actual_checkin, actual_checkout,
-                room_price, service_price, deposit_amount, deposit_applied,
+                room_price, service_price, discount_amount, discount_code, deposit_amount, deposit_applied,
                 final_amount, payment_method, services_detail
             ) VALUES (
                 $1, $2, $3,
                 $4, $5, $6, $7,
                 $8, $9,
                 $10, $11, $12,
-                $13, $14, $15, $16,
-                $17, $18, $19
+                $13, $14, $15, $16, $17, $18,
+                $19, $20, $21
             )`,
             [
                 billId, booking_code, paymentData.cashier_id ?? null,
@@ -205,13 +209,58 @@ export const checkoutBookingById = async (id, paymentData = {}) => {
                 booking.rent_type, actualCheckin, actualCheckout,
                 paymentData.room_price ?? 0,
                 paymentData.service_price ?? 0,
+                paymentData.discount_amount ?? 0,
+                paymentData.discount_code ?? null,
                 booking.deposit_amount ?? 0,
-                false, // deposit_applied — chưa xử lý logic cọc
+                (booking.deposit_amount && booking.deposit_amount > 0) ? true : false,
                 paymentData.final_amount ?? 0,
                 paymentData.payment_method ?? 'CASH',
                 JSON.stringify(paymentData.services_detail ?? [])
             ]
         );
+
+        // 8. Cộng điểm cho khách hàng (nếu có)
+        if (paymentData.memberCode && paymentData.pointsToEarn) {
+            await client.query(
+                `UPDATE customers SET current_points = current_points + $1 WHERE member_code = $2`,
+                [paymentData.pointsToEarn, paymentData.memberCode]
+            );
+            // Ghi log biến động điểm
+            const customerRes = await client.query(`SELECT customer_id FROM customers WHERE member_code = $1`, [paymentData.memberCode]);
+            if (customerRes.rowCount > 0) {
+                const customerId = customerRes.rows[0].customer_id;
+                await client.query(
+                    `INSERT INTO point_transactions (customer_id, amount, description, reference_code)
+                     VALUES ($1, $2, $3, $4)`,
+                    [customerId, paymentData.pointsToEarn, `Tích điểm từ hóa đơn ${billId}`, billId]
+                );
+            }
+        }
+
+        // 9. Giảm lượt sử dụng của mã giảm giá (nếu có)
+        if (paymentData.discount_code) {
+            await client.query(
+                `UPDATE discount_codes 
+                 SET usage_limit = usage_limit - 1, updated_at = NOW() 
+                 WHERE code = $1 AND usage_limit IS NOT NULL AND usage_limit > 0`,
+                [paymentData.discount_code]
+            );
+
+            // Nếu người dùng có đăng nhập memberCode, đánh dấu voucher trong ví là đã sử dụng
+            if (paymentData.memberCode) {
+                await client.query(
+                    `UPDATE customer_vouchers cv
+                     SET is_used = TRUE, used_at = NOW()
+                     FROM discount_codes dc, customers c
+                     WHERE cv.discount_id = dc.discount_id
+                       AND cv.customer_id = c.customer_id
+                       AND dc.code = $1
+                       AND c.member_code = $2
+                       AND cv.is_used = FALSE`,
+                    [paymentData.discount_code, paymentData.memberCode]
+                );
+            }
+        }
 
         await client.query('COMMIT');
         return { booking_code, bill_id: billId };
