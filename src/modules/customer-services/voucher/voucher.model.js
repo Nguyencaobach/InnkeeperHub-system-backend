@@ -58,7 +58,7 @@ class VoucherModel {
 
             // 3. Trừ điểm
             await client.query(
-                `UPDATE customers SET current_points = current_points - $1 WHERE customer_id = $2`,
+                `UPDATE customers SET current_points = COALESCE(current_points, 0) - $1 WHERE customer_id = $2`,
                 [pointsRequired, customerId]
             );
 

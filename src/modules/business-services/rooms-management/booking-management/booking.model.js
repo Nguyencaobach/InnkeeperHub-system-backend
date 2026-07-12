@@ -222,7 +222,7 @@ export const checkoutBookingById = async (id, paymentData = {}) => {
         // 8. Cộng điểm cho khách hàng (nếu có)
         if (paymentData.memberCode && paymentData.pointsToEarn) {
             await client.query(
-                `UPDATE customers SET current_points = current_points + $1 WHERE member_code = $2`,
+                `UPDATE customers SET current_points = COALESCE(current_points, 0) + $1 WHERE member_code = $2`,
                 [paymentData.pointsToEarn, paymentData.memberCode]
             );
             // Ghi log biến động điểm
