@@ -23,6 +23,7 @@ import bookingServiceItemRoutes from './src/modules/business-services/rooms-mana
 import profileRoutes from './src/modules/business-services/profile-management/profile.route.js'; // Router hồ sơ cá nhân & thông tin doanh nghiệp
 import billPaymentsRoutes from './src/modules/business-services/account-activity/bill_payments.route.js'; // Router nhật ký hóa đơn
 import reserveBookingRoutes from './src/modules/business-services/rooms-management/reserve-booking/reserve-booking.route.js'; // Router lịch đặt trước (RESERVED)
+import revenueRoutes from './src/modules/business-services/revenue/revenue.route.js'; // Router thống kê doanh thu
 
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
@@ -73,6 +74,7 @@ app.use('/api/booking-service-items', bookingServiceItemRoutes); // Router dịc
 app.use('/api/profile', profileRoutes); // Router hồ sơ cá nhân & thông tin doanh nghiệp
 app.use('/api/bill-payments', billPaymentsRoutes); // Router nhật ký hóa đơn thanh toán
 app.use('/api/reserve-bookings', reserveBookingRoutes); // Router lịch đặt trước của mobile user (RESERVED)
+app.use('/api/revenue', revenueRoutes); // Router thống kê doanh thu
 
 // ====================================================================================================================================================================================
 // Router dành cho khách hàng (customer-services)
